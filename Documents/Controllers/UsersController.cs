@@ -26,7 +26,7 @@ namespace Documents.Controllers
         {
             return PerformAction<IEnumerable<UserDto>>(() =>
             {
-                return _userService.GetAllUsers();
+                return _userService.GetAll();
             });
         }
 
@@ -40,7 +40,7 @@ namespace Documents.Controllers
         {
             return PerformAction<UserDto>(() =>
             {
-                return _userService.GetUserById(id);
+                return _userService.Get(id);
             });
         }
 
@@ -53,11 +53,11 @@ namespace Documents.Controllers
         [UserPermissions(ContentOwner = "Own")]
         public IHttpActionResult Put(int id, [FromBody]UserViewModel value)
         {
-            return PerformAction<bool>(() =>
+            return PerformAction<UserDto>(() =>
             {
-                var user = _userService.GetUserById(id);
-                user = value.ToDto(user);
-                return _userService.UpdateUser(user);
+                var user = value.ToDto();
+                user.UserId = id;
+                return _userService.Update(user);
             });
         }
 
@@ -71,7 +71,7 @@ namespace Documents.Controllers
         {
             return PerformAction<bool>(() =>
             {
-                return _userService.DeleteUser(id);
+                return _userService.Delete(id);
             });
         }
     }

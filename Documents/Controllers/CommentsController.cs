@@ -28,7 +28,7 @@ namespace Documents.Controllers
         {
             return PerformAction<IEnumerable<CommentDto>>(() =>
             {
-                return _commentService.GetCommentsByDocumentId(documentId, 0);
+                return _commentService.GetAll(documentId);
             });
         }
 
@@ -41,7 +41,7 @@ namespace Documents.Controllers
         {
             return PerformAction<CommentDto>(() =>
             {
-                return _commentService.GetCommentById(id, 0);
+                return _commentService.Get(id);
             });
         }
 
@@ -55,7 +55,7 @@ namespace Documents.Controllers
             return PerformAction<CommentDto>(() =>
             {
                 var comment = data.ToDto();
-                return _commentService.CreateComment(comment, 0);
+                return _commentService.Create(comment);
             });
         }
 
@@ -68,11 +68,11 @@ namespace Documents.Controllers
         [CommentPermissions(ContentOwner = "Own")]
         public IHttpActionResult Put(int id, [FromBody]CommentViewModel data)
         {
-            return PerformAction<bool>(() =>
+            return PerformAction<CommentDto>(() =>
             {
-                var comment = _commentService.GetCommentById(id, 0);
-                comment = data.ToDto(comment);
-                return _commentService.UpdateComment(comment);
+                var comment = data.ToDto();
+                comment.Id = id;
+                return _commentService.Create(comment);
             });
         }
 
@@ -86,7 +86,7 @@ namespace Documents.Controllers
         {
             return PerformAction<bool>(() =>
             {
-                return _commentService.DeleteComment(id);
+                return _commentService.Delete(id);
             });
         }
     }

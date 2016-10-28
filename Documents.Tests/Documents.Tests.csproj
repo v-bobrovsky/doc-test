@@ -81,11 +81,32 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="App_Start\UnityConfig.cs" />
-    <Compile Include="UnitTest1.cs" />
+    <Compile Include="CommentsTest.cs" />
+    <Compile Include="Core\ObjectContainer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UnitTest2.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Documents.DataAccess\Documents.DataAccess.csproj">
+      <Project>{d0d05578-708f-43d0-a5c1-bbc361c34089}</Project>
+      <Name>Documents.DataAccess</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Documents.Data\Documents.Data.csproj">
+      <Project>{fb4c4320-9e10-4304-b6ab-f2bb0f2c4ea2}</Project>
+      <Name>Documents.Data</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Documents.Services.Impl\Documents.Services.Impl.csproj">
+      <Project>{85148f12-45ce-42bb-a5de-fce4c3d7fe34}</Project>
+      <Name>Documents.Services.Impl</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Documents.Services\Documents.Services.csproj">
+      <Project>{26267ba8-f4fb-447b-8087-d1dead0e8ae6}</Project>
+      <Name>Documents.Services</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Documents.Utils\Documents.Utils.csproj">
+      <Project>{f6e7dda9-0fcd-4f77-be2a-5fc294403355}</Project>
+      <Name>Documents.Utils</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Documents\Documents.csproj">
       <Project>{88D7A242-6D53-431D-817D-5D21D8009921}</Project>
       <Name>Documents</Name>

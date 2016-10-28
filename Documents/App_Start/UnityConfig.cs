@@ -15,15 +15,22 @@ namespace Documents
     /// </summary>
     public static class UnityConfig
     {
+        private static readonly IUnityContainer _container = new UnityContainer();
+
+        public static T Resolve<T>()
+        {
+            return _container.Resolve<T>();
+        }
+
         public static void RegisterComponents(HttpConfiguration config)
         {
 			var container = new UnityContainer();
 
             container.RegisterType<ILogger, SimpleLogger>(new HierarchicalLifetimeManager());
+            container.RegisterType<IUserContext, UserContext>(new HierarchicalLifetimeManager());
             container.RegisterType<IDocumentService, DocumentService>(new HierarchicalLifetimeManager());
             container.RegisterType<ICommentService, CommentService>(new HierarchicalLifetimeManager());
-
-            container.RegisterType<IUserService, UserService>();
+            container.RegisterType<IUserService, UserService>(new HierarchicalLifetimeManager());
 
             config.DependencyResolver = new UnityResolver(container);
 

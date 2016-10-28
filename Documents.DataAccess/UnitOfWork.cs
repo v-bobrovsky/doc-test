@@ -12,7 +12,7 @@ namespace Documents.DataAccess
     /// <summary>
     /// Unit of Work class responsible for DB transactions
     /// </summary>
-    public class UnitOfWork : IDisposable
+    public class UnitOfWork : IUnitOfWork
     {
         #region Members
 

@@ -14,7 +14,12 @@ namespace Documents.Data
         /// <summary>
         /// Author name
         /// </summary>
-        public string AuthorName { get; set; }
+        public string UserName { get; set; }
+
+        /// <summary>
+        /// Identity of author
+        /// </summary>
+        public int UserId { get; set; }
 
         /// <summary>
         /// Subject for comment

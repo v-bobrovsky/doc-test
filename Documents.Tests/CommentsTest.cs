@@ -4,7 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Documents.Tests
 {
     [TestClass]
-    public class UnitTest1
+    public class TestCommentService
     {
         [TestMethod]
         public void TestMethod1()

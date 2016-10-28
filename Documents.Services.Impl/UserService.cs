@@ -5,70 +5,60 @@ using System.Collections.Generic;
 using Documents.Data;
 using Documents.DataAccess;
 using System.Transactions;
+using Documents.Utils;
 
 namespace Documents.Services.Impl
 {
     /// <summary>
     /// Provides users functionality.
     /// </summary>
-    public class UserService: IUserService
+    public class UserService : RepositoryService<UserDto, int>, IUserService
     {
-        private readonly UnitOfWork _unitOfWork;
-
         /// <summary>
         /// Constructor
         /// </summary>
         public UserService()
+            : base()
         {
-            _unitOfWork = new UnitOfWork();
         }
 
         /// <summary>
-        /// Retrieves a specific user
+        /// Validate user identity
         /// </summary>
-        /// <param name="userId">User identifier</param>
-        /// <returns>
-        /// <see cref="UserDto"/>s object containing the new comment.
-        /// </returns>
-        public UserDto GetUserById(int userId)
+        /// <param name="id">User identity</param>
+        /// <returns></returns>
+        protected override bool ValidateEntityKey(int id)
         {
-            UserDto result = null;
-
-            var user = _unitOfWork
-                .UserRepository
-                .GetByID(userId);
-
-            if (user != null && !user.Deleted)
-                result = user.ToDto();
-
-            return result;
+            return (id > 0);
         }
 
         /// <summary>
-        /// Retrieves all users
+        /// Validate new user entity
         /// </summary>
-        /// <param name="userId">User identifier</param>
-        /// <returns>
-        /// List of <see cref="UserDto"/>s object containing the results.
-        /// </returns>
-        public IEnumerable<UserDto> GetAllUsers()
+        /// <param name="entityDto">User entity</param>
+        /// <returns></returns>
+        protected override bool ValidateNewEntity(UserDto entityDto)
         {
-            List<UserDto> result = null;
-
-            var users = _unitOfWork
-                .UserRepository
-                .GetMany(u => !u.Deleted)
-                .ToList();
-
-            if (users != null && users.Any())
-            {
-                result = new List<UserDto>();
-                users.ForEach(u => result.Add(u.ToDto()));
-            }
-
-            return result;
+            return entityDto != null
+                && !String.IsNullOrEmpty(entityDto.Login)
+                && !String.IsNullOrEmpty(entityDto.UserName)
+                && !String.IsNullOrEmpty(entityDto.UserRole);
         }
 
+        /// <summary>
+        /// Validate exist user entity
+        /// </summary>
+        /// <param name="entityDto">User entity</param>
+        /// <returns></returns>
+        protected override bool ValidateExistEntity(UserDto entityDto)
+        {
+            return entityDto != null
+                && entityDto.UserId > 0
+                && !String.IsNullOrEmpty(entityDto.Login)
+                && !String.IsNullOrEmpty(entityDto.UserName)
+                && !String.IsNullOrEmpty(entityDto.UserRole);
+        }
+ 
         /// <summary>
         /// Creates a new user
         /// </summary>
@@ -76,11 +66,11 @@ namespace Documents.Services.Impl
         /// <returns>
         /// <see cref="UserDto"/>s object containing the new user.
         /// </returns>
-        public UserDto CreateUser(UserDto user)
+        protected override UserDto OnCreate(UserDto entityDto)
         {
             UserDto result = null;
 
-            var entity = user.ToEntity();
+            var entity = entityDto.ToEntity();
 
             if (entity != null)
             {
@@ -101,40 +91,95 @@ namespace Documents.Services.Impl
         }
 
         /// <summary>
+        /// Retrieves a specific user
+        /// </summary>
+        /// <param name="userId">User identifier</param>
+        /// <returns>
+        /// <see cref="UserDto"/>s object containing the new comment.
+        /// </returns>
+        protected override UserDto OnGet(int id)
+        {
+            UserDto result = null;
+
+            var user = _unitOfWork
+                .UserRepository
+                .GetByID(id);
+
+            if (user != null && !user.Deleted)
+                result = user.ToDto();
+
+            return result;
+        }
+
+        /// <summary>
+        /// Retrieves all users
+        /// </summary>
+        /// <param name="userId">User identifier</param>
+        /// <returns>
+        /// List of <see cref="UserDto"/>s object containing the results.
+        /// </returns>
+        protected override IEnumerable<UserDto> OnGetAll(params object[] args)
+        {
+            return GetAllUsers();
+        }
+
+        /// <summary>
+        /// Retrieves all users
+        /// </summary>
+        /// <param name="userId">User identifier</param>
+        /// <returns>
+        /// List of <see cref="UserDto"/>s object containing the results.
+        /// </returns>
+        private IEnumerable<UserDto> GetAllUsers()
+        {
+            List<UserDto> result = null;
+
+            var users = _unitOfWork
+                .UserRepository
+                .GetMany(u => !u.Deleted)
+                .ToList();
+
+            if (users != null && users.Any())
+            {
+                result = new List<UserDto>();
+                users.ForEach(u => result.Add(u.ToDto()));
+            }
+
+            return result;
+        }
+
+        /// <summary>
         /// Updates a specific user
         /// </summary>
         /// <param name="user">User data</param>
         /// <returns>
         /// Return True if succeeded otherwise False
         /// </returns>
-        public bool UpdateUser(UserDto user)
+        protected override UserDto OnUpdate(UserDto entityDto)
         {
-            bool result = false;
+            UserDto result = null;
 
-            if (user != null && user.UserId > 0)
+            var oldEntity = _unitOfWork
+                .UserRepository
+                .GetByID(entityDto.UserId);
+
+            var entity = (oldEntity != null)
+                ? entityDto.ToEntity(oldEntity)
+                : null;
+
+            if (entity != null)
             {
-                var oldEntity = _unitOfWork
-                    .UserRepository
-                    .GetByID(user.UserId);
-
-                var entity = (oldEntity != null)
-                    ? user.ToEntity(oldEntity)
-                    : null;
-
-                if (entity != null)
+                using (var scope = new TransactionScope())
                 {
-                    using (var scope = new TransactionScope())
-                    {
-                        _unitOfWork
-                            .UserRepository
-                            .Update(entity);
+                    _unitOfWork
+                        .UserRepository
+                        .Update(entity);
 
-                        _unitOfWork.Save();
-                        scope.Complete();
-                    }
-
-                    result = true;
+                    _unitOfWork.Save();
+                    scope.Complete();
                 }
+
+                result = entity.ToDto();
             }
 
             return result;
@@ -145,32 +190,29 @@ namespace Documents.Services.Impl
         /// </summary>
         /// <param name="userId">User identifier</param>
         /// Return True if succeeded otherwise False
-        public bool DeleteUser(int userId)
+        protected override bool OnDelete(int id)
         {
             bool result = false;
 
-            if (userId > 0)
+            var entity = _unitOfWork
+                .UserRepository
+                .GetByID(id);
+
+            if (entity != null)
             {
-                var entity = _unitOfWork
-                    .UserRepository
-                    .GetByID(userId);
-
-                if (entity != null)
+                using (var scope = new TransactionScope())
                 {
-                    using (var scope = new TransactionScope())
-                    {
-                        entity.Deleted = true;
+                    entity.Deleted = true;
 
-                        _unitOfWork
-                            .UserRepository
-                            .Update(entity);
+                    _unitOfWork
+                        .UserRepository
+                        .Update(entity);
 
-                        _unitOfWork.Save();
-                        scope.Complete();
-                    }
-
-                    result = true;
+                    _unitOfWork.Save();
+                    scope.Complete();
                 }
+
+                result = true;
             }
 
             return result;

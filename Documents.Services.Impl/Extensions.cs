@@ -47,7 +47,7 @@ namespace Documents.Services.Impl
                 Id = entity.Id,
                 CreatedTime = entity.CreatedTime,
                 ModifiedTime = entity.ModifiedTime,
-                AuthorName = entity.User.Name,
+                UserName = entity.User.Name,
                 CanModify = canModify,
                 Subject = entity.Subject,
                 Content = entity.Content,
@@ -55,14 +55,14 @@ namespace Documents.Services.Impl
             };
         }
 
-        public static Comment ToEntity(this CommentDto dto, int userId)
+        public static Comment ToEntity(this CommentDto dto)
         {
             return new Comment()
             {
                 Id = dto.Id,
                 CreatedTime = DateTime.Now,
                 ModifiedTime = DateTime.Now,
-                UserId = userId,
+                UserId = dto.UserId,
                 Subject = dto.Subject,
                 Content = dto.Content,
                 DocumentId = dto.DocumentId
@@ -90,21 +90,22 @@ namespace Documents.Services.Impl
                 Id = entity.Id,
                 CreatedTime = entity.CreatedTime,
                 ModifiedTime = entity.ModifiedTime,
-                AuthorName = entity.User.Name,
+                UserName = entity.User.Name,
+                UserId = entity.User.UserId,
                 CanModify = canModify,
                 Name = entity.Name,
                 Content = entity.Content
             };
         }
 
-        public static Document ToEntity(this DocumentDto dto, int userId)
+        public static Document ToEntity(this DocumentDto dto)
         {
             return new Document()
             {
                 Id = dto.Id,
                 CreatedTime = DateTime.Now,
                 ModifiedTime = DateTime.Now,
-                UserId = userId,
+                UserId = dto.UserId,
                 Name = dto.Name,
                 Content = dto.Content
             };

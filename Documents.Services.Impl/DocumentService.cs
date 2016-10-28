@@ -5,54 +5,127 @@ using System.Collections.Generic;
 using Documents.Data;
 using Documents.DataAccess;
 using System.Transactions;
+using Documents.Utils;
 
 namespace Documents.Services.Impl
 {
     /// <summary>
     /// Provides documents functionality.
     /// </summary>
-    public class DocumentService : IDocumentService
+    public class DocumentService : RepositoryService<DocumentDto, Guid>, IDocumentService
     {
-        private readonly UnitOfWork _unitOfWork;
-
         /// <summary>
         /// Constructor
         /// </summary>
         public DocumentService()
+            : base()
         {
-            _unitOfWork = new UnitOfWork();
         }
 
         /// <summary>
-        /// Retrieves a specific comment
+        /// Validate document identity
+        /// </summary>
+        /// <param name="id">Document identity</param>
+        /// <returns></returns>
+        protected override bool ValidateEntityKey(Guid id)
+        {
+            return !id.Equals(Guid.Empty);
+        }
+
+        /// <summary>
+        /// Validate new document entity
+        /// </summary>
+        /// <param name="entityDto">Document entity</param>
+        /// <returns></returns>
+        protected override bool ValidateNewEntity(DocumentDto entityDto)
+        {
+            return entityDto != null
+                && !String.IsNullOrEmpty(entityDto.Name);
+        }
+
+        /// <summary>
+        /// Validate exist document entity
+        /// </summary>
+        /// <param name="entityDto">Document entity</param>
+        /// <returns></returns>
+        protected override bool ValidateExistEntity(DocumentDto entityDto)
+        {
+            return entityDto != null
+                && !entityDto.Id.Equals(Guid.Empty)
+                && !String.IsNullOrEmpty(entityDto.Name);
+        }
+
+        /// <summary>
+        /// Creates a new document
+        /// </summary>
+        /// <param name="entity">Document data</param>
+        /// <returns>
+        /// <see cref="DocumentDto"/>s object containing the new document.
+        /// </returns>
+        protected override DocumentDto OnCreate(DocumentDto entityDto)
+        {
+            var entity = entityDto.ToEntity();
+
+            using (var scope = new TransactionScope())
+            {
+                _unitOfWork
+                    .DocumentRepository
+                    .Insert(entity);
+
+                _unitOfWork.Save();
+                scope.Complete();
+            }
+
+            return entity.ToDto(true);
+        }
+
+        /// <summary>
+        /// Retrieves a specific document
         /// </summary>
         /// <param name="documentId">Document unique identifier</param>
         /// <returns></returns>
-        public DocumentDto GetDocumentById(Guid documentId, int userId)
+        protected override DocumentDto OnGet(Guid id)
         {
             DocumentDto result = null;
 
             var document = _unitOfWork
                 .DocumentRepository
-                .GetByID(documentId);
-
+                .GetByID(id);
+            
             if (document != null)
             {
                 result = document
-                    .ToDto(userId == document.UserId);
+                    .ToDto(_userCtx.GetCurrentId() == document.UserId);
             }
 
             return result;
         }
 
         /// <summary>
-        /// Retrieves list of all specific documents.
+        /// Retrieves list of all specific documents. 
+        /// Or retrieves list of specific documents associated for the user.
         /// </summary>
-        /// <param name="documentId">Document unique identifier</param>
         /// <returns>
         /// List of <see cref="DocumentDto"/>s object containing the results.
         /// </returns>
-        public IEnumerable<DocumentDto> GetAllDocuments(int userId)
+        protected override IEnumerable<DocumentDto> OnGetAll(params object[] args)
+        {
+            var isGetDocumentsByUserIdUserId = (args != null
+                && args.Length == 1 && args[0] is int && (int)args[0] > 0);
+            
+            if (isGetDocumentsByUserIdUserId)
+                return GetDocumentsByUserId((int)args[0]);
+            else
+                return GetAllDocuments();
+        }
+
+        /// <summary>
+        /// Retrieves list of all specific documents.
+        /// </summary>
+        /// <returns>
+        /// List of <see cref="DocumentDto"/>s object containing the results.
+        /// </returns>
+        protected IEnumerable<DocumentDto> GetAllDocuments()
         {
             List<DocumentDto> result = null;
 
@@ -63,6 +136,8 @@ namespace Documents.Services.Impl
 
             if (documents != null && documents.Any())
             {
+                var userId = _userCtx.GetCurrentId();
+
                 result = new List<DocumentDto>();
                 documents.ForEach(d => result.Add(d.ToDto(userId == d.UserId)));
             }
@@ -78,7 +153,7 @@ namespace Documents.Services.Impl
         /// List of <see cref="DocumentDto"/>s object containing the results in the 
         /// sequence specified in the userId.
         /// </returns>
-        public IEnumerable<DocumentDto> GetDocumentsByUserId(int userId)
+        protected IEnumerable<DocumentDto> GetDocumentsByUserId(int userId)
         {
             List<DocumentDto> result = null;
 
@@ -90,38 +165,7 @@ namespace Documents.Services.Impl
             if (documents != null && documents.Any())
             {
                 result = new List<DocumentDto>();
-                documents.ForEach(c => result.Add(c.ToDto(userId == c.UserId)));
-            }
-
-            return result;
-        }
-
-        /// <summary>
-        /// Creates a new document
-        /// </summary>
-        /// <param name="document">Document data</param>
-        /// <returns>
-        /// <see cref="DocumentDto"/>s object containing the new document.
-        /// </returns>
-        public DocumentDto CreateDocument(DocumentDto document, int userId)
-        {
-            DocumentDto result = null;
-
-            var entity = document.ToEntity(userId);
-
-            if (entity != null)
-            {
-                using (var scope = new TransactionScope())
-                {
-                    _unitOfWork
-                        .DocumentRepository
-                        .Insert(entity);
-
-                    _unitOfWork.Save();
-                    scope.Complete();
-                }
-
-                result = entity.ToDto(true);
+                documents.ForEach(d => result.Add(d.ToDto(true)));
             }
 
             return result;
@@ -134,34 +178,31 @@ namespace Documents.Services.Impl
         /// <returns>
         /// Return True if succeeded otherwise False
         /// </returns>
-        public bool UpdateDocument(DocumentDto document)
+        protected override DocumentDto OnUpdate(DocumentDto entityDto)
         {
-            bool result = false;
+            DocumentDto result = null;
 
-            if (document != null && !document.Id.Equals(Guid.Empty))
+            var oldEntity = _unitOfWork
+                .DocumentRepository
+                .GetByID(entityDto.Id);
+
+            var entity = (oldEntity != null)
+                ? entityDto.ToEntity(oldEntity)
+                : null;
+
+            if (entity != null)
             {
-                var oldEntity = _unitOfWork
-                    .DocumentRepository
-                    .GetByID(document.Id);
-
-                var entity = (oldEntity != null)
-                    ? document.ToEntity(oldEntity) 
-                    : null;
-
-                if (entity != null)
+                using (var scope = new TransactionScope())
                 {
-                    using (var scope = new TransactionScope())
-                    {
-                        _unitOfWork
-                            .DocumentRepository
-                            .Update(entity);
+                    _unitOfWork
+                        .DocumentRepository
+                        .Update(entity);
 
-                        _unitOfWork.Save();
-                        scope.Complete();
-                    }
-
-                    result = true;
+                    _unitOfWork.Save();
+                    scope.Complete();
                 }
+
+                result = entity.ToDto(true);
             }
 
             return result;
@@ -172,26 +213,20 @@ namespace Documents.Services.Impl
         /// </summary>
         /// <param name="documentId">Document unique identifier</param>
         /// Return True if succeeded otherwise False
-        public bool DeleteDocument(Guid documentId)
+
+        protected override bool OnDelete(Guid id)
         {
-            bool result = false;
-
-            if (!documentId.Equals(Guid.Empty))
+            using (var scope = new TransactionScope())
             {
-                using (var scope = new TransactionScope())
-                {
-                    _unitOfWork
-                        .DocumentRepository
-                        .Delete(documentId);
+                _unitOfWork
+                    .DocumentRepository
+                    .Delete(id);
 
-                    _unitOfWork.Save();
-                    scope.Complete();
-                }
-
-                result = true;
+                _unitOfWork.Save();
+                scope.Complete();
             }
 
-            return result;
+            return true;
         }
 
         /// <summary>
@@ -200,9 +235,9 @@ namespace Documents.Services.Impl
         /// <param name="documentId">Document unique identifier</param>
         /// <param name="userId">Owner user id</param>
         /// <returns></returns>
-        public bool CheckIsDocumentOwner(Guid documentId, int userId)
+        public bool CheckIsDocumentOwner(Guid id)
         {
-            var document = GetDocumentById(documentId, userId);
+            var document = Get(id);
             return (document != null && document.CanModify);
         }
     }

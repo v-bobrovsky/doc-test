@@ -27,7 +27,7 @@ namespace Documents.Controllers
         {
             return PerformAction<IEnumerable<DocumentDto>>(() =>
             {
-                return _documentService.GetAllDocuments(0);
+                return _documentService.GetAll();
             });
         }
 
@@ -40,7 +40,7 @@ namespace Documents.Controllers
         {
             return PerformAction<DocumentDto>(() =>
             {
-                return _documentService.GetDocumentById(id, 0);
+                return _documentService.Get(id);
             });
         }
 
@@ -55,7 +55,7 @@ namespace Documents.Controllers
             return PerformAction<DocumentDto>(() =>
             {
                 var document = data.ToDto();
-                return _documentService.CreateDocument(document, 0);
+                return _documentService.Create(document);
             });
         }
 
@@ -68,11 +68,12 @@ namespace Documents.Controllers
         [DocumentPermissions(Roles = "Manager", ContentOwner = "Own")]
         public IHttpActionResult Put(Guid id, [FromBody]DocumentViewModel data)
         {
-            return PerformAction<bool>(() =>
+            return PerformAction<DocumentDto>(() =>
             {
-                var document = _documentService.GetDocumentById(id, 0);
-                document = data.ToDto(document);
-                return _documentService.UpdateDocument(document);
+                var document = data.ToDto();
+                document.Id = id;
+
+                return _documentService.Create(document);
             });
         }
 
@@ -86,7 +87,7 @@ namespace Documents.Controllers
         {
             return PerformAction<bool>(() =>
             {
-                return _documentService.DeleteDocument(id);
+                return _documentService.Delete(id);
             });
         }
     }

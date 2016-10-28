@@ -14,7 +14,7 @@ namespace Documents.Filters
         protected override bool CheckIsOwnContent(HttpActionContext actionContext, int userId)
         {
             var commentId = (int)actionContext.ActionArguments["id"];
-            return CommentService.CheckIsCommentOwner(commentId, userId);
+            return CommentService.CheckIsCommentOwner(commentId);
         }
     }
 }
