@@ -30,5 +30,27 @@ namespace Documents.Data
         /// User can modify this object 
         /// </summary>
         public bool CanModify { get; set; }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj))
+                return false;
+
+            if (ReferenceEquals(this, obj))
+                return true;
+
+            if (obj.GetType() != this.GetType())
+                return false;
+
+            return Equals((BaseEntityDto<TIdentity>)obj);
+        }
+
+        protected bool Equals(BaseEntityDto<TIdentity> other)
+        {
+            return Id.Equals(other.Id)
+                && CreatedTime == other.CreatedTime
+                && ModifiedTime == other.ModifiedTime
+                && CanModify == other.CanModify;
+        }
     }
 }

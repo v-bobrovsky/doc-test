@@ -14,5 +14,11 @@ namespace Documents.Services
         /// Retrieves a current user identifier
         /// </summary>
         int GetCurrentId();
+
+        /// <summary>
+        /// Retrieves a current user
+        /// </summary>
+        /// <returns></returns>
+        UserDto GetCurrentUser();
     }
 }

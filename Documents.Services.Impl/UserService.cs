@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Linq;
+using System.Transactions;
 using System.Collections.Generic;
 
 using Documents.Data;
+using Documents.Common;
 using Documents.DataAccess;
-using System.Transactions;
 using Documents.Utils;
 
 namespace Documents.Services.Impl
@@ -17,8 +18,8 @@ namespace Documents.Services.Impl
         /// <summary>
         /// Constructor
         /// </summary>
-        public UserService()
-            : base()
+        public UserService(IUserContext userCtx)
+            : base(userCtx)
         {
         }
 
@@ -41,8 +42,9 @@ namespace Documents.Services.Impl
         {
             return entityDto != null
                 && !String.IsNullOrEmpty(entityDto.Login)
+                && !String.IsNullOrEmpty(entityDto.Password)
                 && !String.IsNullOrEmpty(entityDto.UserName)
-                && !String.IsNullOrEmpty(entityDto.UserRole);
+                /*&& !String.IsNullOrEmpty(entityDto.UserRole)*/;
         }
 
         /// <summary>
@@ -53,10 +55,11 @@ namespace Documents.Services.Impl
         protected override bool ValidateExistEntity(UserDto entityDto)
         {
             return entityDto != null
-                && entityDto.UserId > 0
+                && entityDto.Id > 0
                 && !String.IsNullOrEmpty(entityDto.Login)
+                && !String.IsNullOrEmpty(entityDto.Password)
                 && !String.IsNullOrEmpty(entityDto.UserName)
-                && !String.IsNullOrEmpty(entityDto.UserRole);
+                /*&& !String.IsNullOrEmpty(entityDto.UserRole)*/;
         }
  
         /// <summary>
@@ -161,7 +164,7 @@ namespace Documents.Services.Impl
 
             var oldEntity = _unitOfWork
                 .UserRepository
-                .GetByID(entityDto.UserId);
+                .GetByID(entityDto.Id);
 
             var entity = (oldEntity != null)
                 ? entityDto.ToEntity(oldEntity)

@@ -1,15 +1,20 @@
 ﻿using System;
 
 using Documents.Data;
-using Documents.DataAccess;
+using Documents.Services;
 
-namespace Documents.Services.Impl
+namespace Documents.Core
 {
     public class UserContext : IUserContext
     {
         public int GetCurrentId()
         {
             return 0;
+        }
+
+        public UserDto GetCurrentUser()
+        {
+            return null;
         }
     }
 }

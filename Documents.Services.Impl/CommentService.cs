@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Linq;
+using System.Transactions;
 using System.Collections.Generic;
 
 using Documents.Data;
-using Documents.DataAccess;
-using System.Transactions;
+using Documents.Common;
 using Documents.Utils;
+using Documents.DataAccess;
 
 namespace Documents.Services.Impl
 {
@@ -17,8 +18,8 @@ namespace Documents.Services.Impl
         /// <summary>
         /// Constructor
         /// </summary>
-        public CommentService()
-            : base()
+        public CommentService(IUserContext userCtx)
+            : base(userCtx)
         {
         }
 
@@ -40,6 +41,8 @@ namespace Documents.Services.Impl
         protected override bool ValidateNewEntity(CommentDto entityDto)
         {
             return entityDto != null
+                && entityDto.UserId > 0
+                && !entityDto.DocumentId.Equals(Guid.Empty)
                 && !String.IsNullOrEmpty(entityDto.Content);
         }
 
@@ -52,6 +55,8 @@ namespace Documents.Services.Impl
         {
             return entityDto != null
                 && entityDto.Id > 0
+                && entityDto.UserId > 0
+                && !entityDto.DocumentId.Equals(Guid.Empty)
                 && !String.IsNullOrEmpty(entityDto.Content);
         }
         
@@ -80,6 +85,11 @@ namespace Documents.Services.Impl
                     scope.Complete();
                 }
 
+                entity = _unitOfWork
+                    .CommentRepository
+                    .GetWithInclude(p => p.Id == entity.Id, "User")
+                    .FirstOrDefault();
+
                 result = entity.ToDto(true);
             }
 
@@ -99,7 +109,8 @@ namespace Documents.Services.Impl
             
             var comment = _unitOfWork
                 .CommentRepository
-                .GetByID(id);
+                .GetWithInclude(p => p.Id == id, "User")
+                .FirstOrDefault();
 
             if (comment != null)
             {
@@ -143,7 +154,7 @@ namespace Documents.Services.Impl
 
             var comments = _unitOfWork
                 .CommentRepository
-                .GetMany(c => documentId.Equals(c.DocumentId))
+                .GetWithInclude(p => p.DocumentId == documentId, "User")
                 .ToList();
 
             if (comments != null && comments.Any())
@@ -187,6 +198,11 @@ namespace Documents.Services.Impl
                     _unitOfWork.Save();
                     scope.Complete();
                 }
+
+                entity = _unitOfWork
+                    .CommentRepository
+                    .GetWithInclude(p => p.Id == entity.Id, "User")
+                    .FirstOrDefault();
 
                 result = entity.ToDto(true);
             }

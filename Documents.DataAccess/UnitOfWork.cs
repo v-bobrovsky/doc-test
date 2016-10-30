@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Data.Entity.Validation;
 
 using Documents.Utils;
+using System.Data.Entity;
 
 namespace Documents.DataAccess
 {
@@ -90,10 +91,40 @@ namespace Documents.DataAccess
         public UnitOfWork()
         {
             _logger = new SimpleLogger();
-            _context = new DocumentsContext();           
+            _context = DocumentsContext.CreateDatabaseIfNotExists();           
         }
 
         #region Public
+
+        /// <summary>
+        /// Create a new database
+        /// </summary>
+        public void CreateNewDatabase()
+        {
+            _userRepository = null;
+            _documentRepository = null;
+            _commentRepository = null;
+
+            try
+            {
+                if (_context.Database.Exists())
+                {
+                    _context.Database.ExecuteSqlCommand(TransactionalBehavior.DoNotEnsureTransaction, 
+                        "ALTER DATABASE [" 
+                        + _context.Database.Connection.Database 
+                        + "] SET SINGLE_USER WITH ROLLBACK IMMEDIATE");
+
+                    _context.Database.Delete();
+                }                   
+
+                _context = DocumentsContext.CreateNewDatabase();
+            }
+            catch (Exception e)
+            {
+                _logger.LogError("Create new database error!", e);
+                throw e;
+            }
+        }
 
         /// <summary>
         /// Save all changers
@@ -111,7 +142,7 @@ namespace Documents.DataAccess
                 foreach (var entityValidationError in e.EntityValidationErrors)
                 {
                     sbErrors.AppendFormat(
-                        "Entity of type \"{1}\" in state \"{2}\" has the following validation errors:\r\n", 
+                        "Entity of type \"{0}\" in state \"{1}\" has the following validation errors:\r\n", 
                         entityValidationError.Entry.Entity.GetType().Name, 
                         entityValidationError.Entry.State);
 

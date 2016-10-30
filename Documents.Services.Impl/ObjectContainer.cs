@@ -26,9 +26,8 @@ namespace Documents.Services.Impl
 
         static ObjectContainer()
         {
-            _container.RegisterType<ILogger, SimpleLogger>(new HierarchicalLifetimeManager());
-            _container.RegisterType<IUnitOfWork, UnitOfWork>(new HierarchicalLifetimeManager());
-            _container.RegisterType<IUserContext, UserContext>(new HierarchicalLifetimeManager());
+            _container.RegisterType<ILogger, SimpleLogger>();
+            _container.RegisterType<IUnitOfWork, UnitOfWork>();
         }
     }
 }

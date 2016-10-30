@@ -30,5 +30,28 @@ namespace Documents.Data
         /// Document content
         /// </summary>
         public string Content { get; set; }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj))
+                return false;
+
+            if (ReferenceEquals(this, obj))
+                return true;
+
+            if (obj.GetType() != this.GetType())
+                return false;
+
+            return Equals((DocumentDto)obj);
+        }
+
+        protected bool Equals(DocumentDto other)
+        {
+            return base.Equals(other)
+                && UserName == other.UserName
+                && UserId == other.UserId
+                && Name == other.Name
+                && Content == other.Content;
+        }
     }
 }

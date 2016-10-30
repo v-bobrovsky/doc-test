@@ -39,6 +39,11 @@ namespace Documents.DataAccess
         }
 
         /// <summary>
+        /// Create a new database
+        /// </summary>
+        void CreateNewDatabase();
+
+        /// <summary>
         /// Save all changers
         /// </summary>
         void Save();

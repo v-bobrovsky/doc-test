@@ -26,6 +26,8 @@ namespace Documents.DataAccess
         public string Password { get; set; }
         public string Name { get; set; }
         public bool Deleted { get; set; }
+        public System.DateTime CreatedTime { get; set; }
+        public System.DateTime ModifiedTime { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<Comment> Comments { get; set; }

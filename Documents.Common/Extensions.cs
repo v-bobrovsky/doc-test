@@ -3,7 +3,7 @@
 using Documents.Data;
 using Documents.DataAccess;
 
-namespace Documents.Services.Impl
+namespace Documents.Common
 {
     public static class Extensions
     {
@@ -14,7 +14,9 @@ namespace Documents.Services.Impl
             if (result != null)
             {
                 result.Name = dto.Login;
+                result.ModifiedTime = DateTime.Now;
                 result.UserName = dto.UserName;
+                result.Password = dto.Password;
             }
 
             return result;
@@ -24,20 +26,30 @@ namespace Documents.Services.Impl
         {
             return new User()
             {
-                UserId = dto.UserId,
+                UserId = dto.Id,
+                CreatedTime = dto.CreatedTime,
+                ModifiedTime = dto.ModifiedTime,
                 UserName = dto.UserName,
-                Name = dto.Login
+                Name = dto.Login,
+                Password = dto.Password
             };
         }
-        
+
         public static UserDto ToDto(this User entity)
         {
-            return new UserDto()
-            {
-                 UserId = entity.UserId,
-                 UserName = entity.UserName,
-                 Login = entity.Name
-            };
+            var result = (!entity.Deleted) ?
+                new UserDto()
+                {
+                    Id = entity.UserId,
+                    CreatedTime = entity.CreatedTime,
+                    ModifiedTime = entity.ModifiedTime,
+                    UserName = entity.UserName,
+                    Login = entity.Name,
+                    Password = entity.Password
+                }
+                : null;
+
+            return result;
         }
 
         public static CommentDto ToDto(this Comment entity, bool canModify)
@@ -48,6 +60,7 @@ namespace Documents.Services.Impl
                 CreatedTime = entity.CreatedTime,
                 ModifiedTime = entity.ModifiedTime,
                 UserName = entity.User.Name,
+                UserId = entity.User.UserId,
                 CanModify = canModify,
                 Subject = entity.Subject,
                 Content = entity.Content,
@@ -102,7 +115,7 @@ namespace Documents.Services.Impl
         {
             return new Document()
             {
-                Id = dto.Id,
+                Id = dto.Id.Equals(Guid.Empty) ? Guid.NewGuid() : dto.Id,
                 CreatedTime = DateTime.Now,
                 ModifiedTime = DateTime.Now,
                 UserId = dto.UserId,

@@ -75,15 +75,17 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="RepositoryService.cs" />
-    <Compile Include="UserContext.cs" />
     <Compile Include="ObjectContainer.cs" />
     <Compile Include="DocumentService.cs" />
     <Compile Include="CommentService.cs" />
-    <Compile Include="Extensions.cs" />
     <Compile Include="UserService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Documents.Common\Documents.Common.csproj">
+      <Project>{ae230c19-abea-4384-83a2-e8f9f93dbf81}</Project>
+      <Name>Documents.Common</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Documents.DataAccess\Documents.DataAccess.csproj">
       <Project>{d0d05578-708f-43d0-a5c1-bbc361c34089}</Project>
       <Name>Documents.DataAccess</Name>

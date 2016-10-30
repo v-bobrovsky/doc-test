@@ -28,9 +28,15 @@ namespace Documents
 
             container.RegisterType<ILogger, SimpleLogger>(new HierarchicalLifetimeManager());
             container.RegisterType<IUserContext, UserContext>(new HierarchicalLifetimeManager());
-            container.RegisterType<IDocumentService, DocumentService>(new HierarchicalLifetimeManager());
-            container.RegisterType<ICommentService, CommentService>(new HierarchicalLifetimeManager());
-            container.RegisterType<IUserService, UserService>(new HierarchicalLifetimeManager());
+
+            IUserContext userCtx = _container.Resolve<IUserContext>();
+
+            container.RegisterType<IDocumentService, DocumentService>(new HierarchicalLifetimeManager(), 
+                new InjectionConstructor(userCtx));
+            container.RegisterType<ICommentService, CommentService>(new HierarchicalLifetimeManager(), 
+                new InjectionConstructor(userCtx));
+            container.RegisterType<IUserService, UserService>(new HierarchicalLifetimeManager(), 
+                new InjectionConstructor(userCtx));
 
             config.DependencyResolver = new UnityResolver(container);
 

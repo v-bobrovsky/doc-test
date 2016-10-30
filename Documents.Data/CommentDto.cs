@@ -35,5 +35,29 @@ namespace Documents.Data
         /// Document unique identifier
         /// </summary>
         public Guid DocumentId { get; set; }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) 
+                return false;
+
+            if (ReferenceEquals(this, obj)) 
+                return true;
+            
+            if (obj.GetType() != this.GetType()) 
+                return false;
+
+            return Equals((CommentDto)obj);
+        }
+
+        protected bool Equals(CommentDto other)
+        {
+            return base.Equals(other)
+                && UserName == other.UserName
+                && UserId == other.UserId
+                && Subject == other.Subject
+                && Content == other.Content
+                && DocumentId.Equals(other.DocumentId);
+        }
     }
 }

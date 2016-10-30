@@ -143,7 +143,10 @@ namespace Documents.DataAccess
         /// <returns></returns>
         public virtual IEnumerable<TEntity> GetAll()
         {
-            return DbSet.ToList();
+            if (!DbSet.Any())
+                return new List<TEntity>();
+            else
+                return DbSet.ToList();
         }
 
         /// <summary>

@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Linq;
+using System.Transactions;
 using System.Collections.Generic;
 
 using Documents.Data;
+using Documents.Common;
 using Documents.DataAccess;
-using System.Transactions;
 using Documents.Utils;
 
 namespace Documents.Services.Impl
@@ -17,8 +18,8 @@ namespace Documents.Services.Impl
         /// <summary>
         /// Constructor
         /// </summary>
-        public DocumentService()
-            : base()
+        public DocumentService(IUserContext userCtx)
+            : base(userCtx)
         {
         }
 
@@ -40,6 +41,7 @@ namespace Documents.Services.Impl
         protected override bool ValidateNewEntity(DocumentDto entityDto)
         {
             return entityDto != null
+                && entityDto.UserId > 0
                 && !String.IsNullOrEmpty(entityDto.Name);
         }
 
@@ -52,6 +54,7 @@ namespace Documents.Services.Impl
         {
             return entityDto != null
                 && !entityDto.Id.Equals(Guid.Empty)
+                && entityDto.UserId > 0
                 && !String.IsNullOrEmpty(entityDto.Name);
         }
 
@@ -76,6 +79,11 @@ namespace Documents.Services.Impl
                 scope.Complete();
             }
 
+            entity = _unitOfWork
+                .DocumentRepository
+                .GetWithInclude(p => p.Id.Equals(entity.Id), "User")
+                .FirstOrDefault();
+
             return entity.ToDto(true);
         }
 
@@ -90,7 +98,8 @@ namespace Documents.Services.Impl
 
             var document = _unitOfWork
                 .DocumentRepository
-                .GetByID(id);
+                .GetWithInclude(p => p.Id.Equals(id), "User")
+                .FirstOrDefault();
             
             if (document != null)
             {
@@ -131,7 +140,7 @@ namespace Documents.Services.Impl
 
             var documents = _unitOfWork
                 .DocumentRepository
-                .GetAll()
+                .GetWithInclude(p => true, "User")
                 .ToList();
 
             if (documents != null && documents.Any())
@@ -159,7 +168,7 @@ namespace Documents.Services.Impl
 
             var documents = _unitOfWork
                 .DocumentRepository
-                .GetMany(d => d.UserId == userId)
+                .GetWithInclude(p => p.UserId == userId, "User")
                 .ToList();
 
             if (documents != null && documents.Any())
@@ -201,6 +210,11 @@ namespace Documents.Services.Impl
                     _unitOfWork.Save();
                     scope.Complete();
                 }
+
+                entity = _unitOfWork
+                    .DocumentRepository
+                    .GetWithInclude(p => p.Id.Equals(entity.Id), "User")
+                    .FirstOrDefault();
 
                 result = entity.ToDto(true);
             }

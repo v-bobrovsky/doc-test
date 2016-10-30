@@ -6,7 +6,7 @@
     <edmx:Diagrams>
       <Diagram DiagramId="e38f71947ab84e9d8f37a8622414cbfc" Name="Diagram1">
         <EntityTypeShape EntityType="DocumentsModel.Comment" Width="1.5" PointX="5.25" PointY="2.125" IsExpanded="true" />
-        <EntityTypeShape EntityType="DocumentsModel.Document" Width="1.5" PointX="3" PointY="3.875" IsExpanded="true" />
+        <EntityTypeShape EntityType="DocumentsModel.Document" Width="1.5" PointX="3.125" PointY="5" IsExpanded="true" />
         <EntityTypeShape EntityType="DocumentsModel.User" Width="1.5" PointX="0.75" PointY="0.5" IsExpanded="true" />
         <AssociationConnector Association="DocumentsModel.FK_DocumentComment" ManuallyRouted="false" />
         <AssociationConnector Association="DocumentsModel.FK_UserComment" ManuallyRouted="false" />

@@ -29,7 +29,7 @@
     <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
     <Property Name="CreatedTime" Type="datetime" Nullable="false" />
     <Property Name="ModifiedTime" Type="datetime" Nullable="false" />
-    <Property Name="Subject" Type="nchar" Nullable="false" MaxLength="150" />
+    <Property Name="Subject" Type="nchar" Nullable="true" MaxLength="150" />
     <Property Name="Content" Type="nchar" Nullable="false" MaxLength="500" />
     <Property Name="DocumentId" Type="uniqueidentifier" Nullable="false" />
     <Property Name="UserId" Type="int" Nullable="false" />
@@ -42,7 +42,7 @@
     <Property Name="CreatedTime" Type="datetime" Nullable="false" />
     <Property Name="ModifiedTime" Type="datetime" Nullable="false" />
     <Property Name="Name" Type="nvarchar(max)" Nullable="false" />
-    <Property Name="Content" Type="nvarchar(max)" Nullable="false" />
+    <Property Name="Content" Type="nvarchar(max)" Nullable="true" />
     <Property Name="UserId" Type="int" Nullable="false" />
   </EntityType>
   <EntityType Name="Users">
@@ -54,6 +54,8 @@
     <Property Name="Password" Type="nvarchar" Nullable="false" MaxLength="50" />
     <Property Name="Name" Type="nvarchar" Nullable="true" MaxLength="50" />
     <Property Name="Deleted" Type="bit" Nullable="false" />
+    <Property Name="CreatedTime" Type="datetime" Nullable="false" />
+    <Property Name="ModifiedTime" Type="datetime" Nullable="false" />
   </EntityType>
   <Association Name="FK_DocumentComment">
     <End Role="Documents" Type="DocumentsModel.Store.Documents" Multiplicity="1">
@@ -104,7 +106,7 @@
           <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Name="CreatedTime" Type="DateTime" Nullable="false" Precision="3" />
           <Property Name="ModifiedTime" Type="DateTime" Nullable="false" Precision="3" />
-          <Property Name="Subject" Type="String" MaxLength="150" FixedLength="true" Unicode="true" Nullable="false" />
+          <Property Name="Subject" Type="String" MaxLength="150" FixedLength="true" Unicode="true" Nullable="true" />
           <Property Name="Content" Type="String" MaxLength="500" FixedLength="true" Unicode="true" Nullable="false" />
           <Property Name="DocumentId" Type="Guid" Nullable="false" />
           <Property Name="UserId" Type="Int32" Nullable="false" />
@@ -119,7 +121,7 @@
           <Property Name="CreatedTime" Type="DateTime" Nullable="false" Precision="3" />
           <Property Name="ModifiedTime" Type="DateTime" Nullable="false" Precision="3" />
           <Property Name="Name" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" Nullable="false" />
-          <Property Name="Content" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="Content" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
           <Property Name="UserId" Type="Int32" Nullable="false" />
           <NavigationProperty Name="Comments" Relationship="Self.FK_DocumentComment" FromRole="Documents" ToRole="Comments" />
           <NavigationProperty Name="User" Relationship="Self.FK_UserDocument" FromRole="Documents" ToRole="Users" />
@@ -135,6 +137,8 @@
           <Property Name="Deleted" Type="Boolean" Nullable="false" />
           <NavigationProperty Name="Comments" Relationship="Self.FK_UserComment" FromRole="Users" ToRole="Comments" />
           <NavigationProperty Name="Documents" Relationship="Self.FK_UserDocument" FromRole="Users" ToRole="Documents" />
+          <Property Name="CreatedTime" Type="DateTime" Nullable="false" />
+          <Property Name="ModifiedTime" Type="DateTime" Nullable="false" />
         </EntityType>
         <Association Name="FK_DocumentComment">
           <End Role="Documents" Type="Self.Document" Multiplicity="1">
@@ -230,6 +234,8 @@
           <ScalarProperty Name="Password" ColumnName="Password" />
           <ScalarProperty Name="Name" ColumnName="Name" />
           <ScalarProperty Name="Deleted" ColumnName="Deleted" />
+          <ScalarProperty Name="CreatedTime" ColumnName="CreatedTime" />
+          <ScalarProperty Name="ModifiedTime" ColumnName="ModifiedTime" />
         </MappingFragment>
       </EntityTypeMapping>
     </EntitySetMapping>

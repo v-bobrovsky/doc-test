@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Linq;
+using System.Transactions;
 using System.Collections.Generic;
 
 using Documents.Data;
+using Documents.Common;
 using Documents.DataAccess;
-using System.Transactions;
 using Documents.Utils;
 
 namespace Documents.Services.Impl
@@ -56,11 +57,11 @@ namespace Documents.Services.Impl
         /// <summary>
         /// Constructor
         /// </summary>
-        public RepositoryService()
+        public RepositoryService(IUserContext userCtx)
         {
             _logger = ObjectContainer.Resolve<SimpleLogger>();
             _unitOfWork = ObjectContainer.Resolve<UnitOfWork>();
-            _userCtx = ObjectContainer.Resolve<UserContext>();
+            _userCtx = userCtx;
         }
 
         /// <summary>

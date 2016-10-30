@@ -56,7 +56,7 @@ namespace Documents.Controllers
             return PerformAction<UserDto>(() =>
             {
                 var user = value.ToDto();
-                user.UserId = id;
+                user.Id = id;
                 return _userService.Update(user);
             });
         }

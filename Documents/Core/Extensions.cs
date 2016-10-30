@@ -11,7 +11,8 @@ namespace Documents.Core
             return new UserDto()
             {
                 Login = model.Login,
-                UserName = model.UserName
+                UserName = model.UserName,
+                Password = model.Password
             };
         }
 
