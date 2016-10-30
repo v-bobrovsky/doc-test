@@ -3,7 +3,7 @@ using System.Web;
 using System.Web.Http;
 using System.Web.Http.Controllers;
 
-namespace Documents.Filters
+namespace Documents.Core
 {
     public abstract class BaseContentPermissions: AuthorizeAttribute
     {
@@ -33,9 +33,8 @@ namespace Documents.Filters
         /// Check is own content
         /// </summary>
         /// <param name="actionContext"></param>
-        /// <param name="userId"></param>
         /// <returns></returns>
-        protected abstract bool CheckIsOwnContent(HttpActionContext actionContext, int userId);
+        protected abstract bool CheckIsOwnContent(HttpActionContext actionContext);
 
         protected override bool IsAuthorized(HttpActionContext actionContext)
         {
@@ -67,7 +66,7 @@ namespace Documents.Filters
             var result = true;
 
             if (!String.IsNullOrEmpty(ContentOwner) && ContentOwner.ToLower().Trim() == "own")
-                result = CheckIsOwnContent(actionContext, 0);
+                result = CheckIsOwnContent(actionContext);
 
             return result;
         }

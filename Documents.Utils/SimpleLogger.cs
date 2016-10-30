@@ -1,6 +1,7 @@
 ﻿using System;
 
 using log4net;
+using ObjectDumper;
 using log4net.Config;
 
 namespace Documents.Utils
@@ -17,7 +18,7 @@ namespace Documents.Utils
             logger = LogManager.GetLogger("Default");
         }
 
-        static void Configure()
+        static SimpleLogger()
         {
             XmlConfigurator.Configure();
         }
@@ -69,6 +70,34 @@ namespace Documents.Utils
         {
             if (logger.IsErrorEnabled)
                 logger.Error(exception);
+        }
+
+        /// <summary>
+        /// Logs an object informational
+        /// </summary>
+        /// <param name="obj">The object to log.</param>>
+        public void LogInfoObject(object obj)
+        {
+            if (logger.IsInfoEnabled)
+            {
+                var message = obj != null
+                    ? obj.DumpToString("Object: ") : "NULL";
+                logger.Info(message);
+            }               
+        }
+
+        /// <summary>
+        /// Logs an error object
+        /// </summary>
+        /// <param name="obj">The object to log.</param>>
+        public void LogErrorObject(object obj)
+        {
+            if (logger.IsErrorEnabled)
+            {
+                var message = obj != null
+                    ? obj.DumpToString("Object: ") : "NULL";
+                logger.Error(message);
+            }
         }
     }
 }

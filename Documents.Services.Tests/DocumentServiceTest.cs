@@ -34,7 +34,7 @@ namespace Documents.Services.Tests
 
         [TestMethod]
         public void SaveDocument_Successfully()
-        {
+        {           
             SaveEntity_SuccessfullySaved();
         }
 

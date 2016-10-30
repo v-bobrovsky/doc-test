@@ -21,7 +21,7 @@ namespace Documents.Core
             return new CommentDto()
             {
                 Subject = model.Subject,
-                Content = model.Content,
+                Content = model.Text,
                 DocumentId = model.DocumentId
             };
         }

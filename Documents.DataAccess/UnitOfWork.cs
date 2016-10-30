@@ -91,7 +91,9 @@ namespace Documents.DataAccess
         public UnitOfWork()
         {
             _logger = new SimpleLogger();
-            _context = DocumentsContext.CreateDatabaseIfNotExists();           
+            _context = DocumentsContext.CreateDatabaseIfNotExists();
+            
+            _logger.LogInfo("UnitOfWork is being created");
         }
 
         #region Public
@@ -105,6 +107,8 @@ namespace Documents.DataAccess
             _documentRepository = null;
             _commentRepository = null;
 
+            _logger.LogInfo("UnitOfWork - performing new database creating...");
+
             try
             {
                 if (_context.Database.Exists())
@@ -115,13 +119,19 @@ namespace Documents.DataAccess
                         + "] SET SINGLE_USER WITH ROLLBACK IMMEDIATE");
 
                     _context.Database.Delete();
+
+                    _logger.LogInfo(String.Format("UnitOfWork - Old database {0} was dropped.", 
+                        _context.Database.Connection.Database));
                 }                   
 
                 _context = DocumentsContext.CreateNewDatabase();
+
+                _logger.LogInfo(String.Format("UnitOfWork - New database {0} has been created successfully.",
+                    _context.Database.Connection.Database));
             }
             catch (Exception e)
             {
-                _logger.LogError("Create new database error!", e);
+                _logger.LogError("Create new database error.", e);
                 throw e;
             }
         }

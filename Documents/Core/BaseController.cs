@@ -25,14 +25,23 @@ namespace Documents.Core
 
             try
             {
-                Logger.LogInfo(String.Format("Performing controller action: {0}", action.Method.Name));
+                Logger.LogInfo(String.Format("Performing service - {0} for method - {1}",
+                    this.GetType().Name, action.Method.Name));
 
-                var retAction = action();
+                if (!ModelState.IsValid)
+                {
+                    var retAction = action();
 
-                if (retAction != null)
-                    result = Ok<T>(retAction);
+                    if (retAction != null)
+                        result = Ok<T>(retAction);
+                    else
+                        result = NotFound();
+                }
                 else
-                    result = NotFound();
+                {
+                    Logger.LogError(String.Format("Validation Performing controller action: {0}", action.Method.Name));
+                    result = BadRequest(ModelState);
+                }
             }
             catch (Exception e)
             {

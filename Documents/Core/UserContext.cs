@@ -14,7 +14,7 @@ namespace Documents.Core
 
         public UserDto GetCurrentUser()
         {
-            return null;
+            return new UserDto();
         }
     }
 }

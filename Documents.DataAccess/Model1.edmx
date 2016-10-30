@@ -120,7 +120,7 @@
           <Property Name="Id" Type="Guid" Nullable="false" />
           <Property Name="CreatedTime" Type="DateTime" Nullable="false" Precision="3" />
           <Property Name="ModifiedTime" Type="DateTime" Nullable="false" Precision="3" />
-          <Property Name="Name" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="Name" Type="String" FixedLength="false" Unicode="true" Nullable="false" MaxLength="150" />
           <Property Name="Content" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
           <Property Name="UserId" Type="Int32" Nullable="false" />
           <NavigationProperty Name="Comments" Relationship="Self.FK_DocumentComment" FromRole="Documents" ToRole="Comments" />
@@ -131,7 +131,7 @@
             <PropertyRef Name="UserId" />
           </Key>
           <Property Name="UserId" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="UserName" Type="String" MaxLength="50" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="UserName" Type="String" MaxLength="150" FixedLength="false" Unicode="true" Nullable="false" />
           <Property Name="Password" Type="String" MaxLength="50" FixedLength="false" Unicode="true" Nullable="false" />
           <Property Name="Name" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="Deleted" Type="Boolean" Nullable="false" />

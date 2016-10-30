@@ -23,10 +23,22 @@ namespace Documents.Utils
         void LogInfo(string message);
 
         /// <summary>
+        /// Logs an object informational
+        /// </summary>
+        /// <param name="obj">The object to log.</param>>
+        void LogInfoObject(object obj);
+
+        /// <summary>
         /// Logs an error message
         /// </summary>
         /// <param name="message">The message to log.</param>
         void LogError(string message);
+
+        /// <summary>
+        /// Logs an error object
+        /// </summary>
+        /// <param name="obj">The object to log.</param>>
+        void LogErrorObject(object obj);
 
         /// <summary>
         /// Logs an error message

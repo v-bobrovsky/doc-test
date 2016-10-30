@@ -44,7 +44,7 @@ namespace Documents.Services.Impl
 
         #endregion
 
-        #region Abstract CRUD methods
+        #region Abstract methods
 
         protected abstract TEntityDto OnCreate(TEntityDto entityDto);
         protected abstract TEntityDto OnGet(TIdentity id);
@@ -65,6 +65,26 @@ namespace Documents.Services.Impl
         }
 
         /// <summary>
+        /// Performs the specified action
+        /// </summary>
+        /// <param name="action">Action to perform</param>
+        private void PerformAction(Action action)
+        {
+            try
+            {
+                _logger.LogInfo(String.Format("Performing service: {0}.{1}", 
+                    this.GetType().Name, action.Method.Name));
+
+                 action();
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e);
+                throw e;
+            }
+        }
+
+        /// <summary>
         /// Creates a new entity
         /// </summary>
         /// <param name="entity"></param>
@@ -75,10 +95,18 @@ namespace Documents.Services.Impl
         {
             TEntityDto result = null;
 
-            if (ValidateNewEntity(entityDto))
-                result = OnCreate(entityDto);
-            else
-                _logger.LogError("Bad entity structure!");
+            PerformAction(() =>
+            {
+                if (ValidateNewEntity(entityDto))
+                {
+                    result = OnCreate(entityDto);
+                }
+                else
+                {
+                    _logger.LogError("Validation error for entity:");
+                    _logger.LogErrorObject(entityDto);
+                }                   
+            });
 
             return result;
         }
@@ -94,10 +122,19 @@ namespace Documents.Services.Impl
         {
             TEntityDto result = null;
 
-            if (ValidateEntityKey(id))
-                result = OnGet(id);
-            else
-                _logger.LogError("Bad entity identity!");
+            PerformAction(() =>
+            {
+                if (ValidateEntityKey(id))
+                {
+                    result = OnGet(id);
+                }
+                else
+                {
+                    _logger.LogError("Validation error for identity:");
+                    _logger.LogErrorObject(id);
+                }
+                    
+            });
 
             return result;
         }
@@ -109,7 +146,14 @@ namespace Documents.Services.Impl
         /// <returns></returns>
         public IEnumerable<TEntityDto> GetAll(params object[] args)
         {
-            return OnGetAll(args);
+            IEnumerable<TEntityDto> result = null;
+
+            PerformAction(() =>
+            {
+                result = OnGetAll(args);
+            });
+
+            return result;
         }
 
         /// <summary>
@@ -123,10 +167,18 @@ namespace Documents.Services.Impl
         {
             TEntityDto result = null;
 
-            if (ValidateExistEntity(entityDto))
-                result = OnUpdate(entityDto);
-            else
-                _logger.LogError("Bad entity structure!");
+            PerformAction(() =>
+            {
+                if (ValidateExistEntity(entityDto))
+                {
+                    result = OnUpdate(entityDto);
+                }
+                else
+                {
+                    _logger.LogError("Validation error for entity:");
+                    _logger.LogErrorObject(entityDto);
+                }
+            });
 
             return result;
         }
@@ -140,10 +192,18 @@ namespace Documents.Services.Impl
         {
             bool result = false;
 
-            if (ValidateEntityKey(id))
-                result = OnDelete(id);
-            else
-                _logger.LogError("Bad entity identity!");
+            PerformAction(() =>
+            {
+                if (ValidateEntityKey(id))
+                {
+                    result = OnDelete(id);
+                }
+                else
+                {
+                    _logger.LogError("Validation error for identity:");
+                    _logger.LogErrorObject(id);
+                }
+            });
 
             return result;
         }
