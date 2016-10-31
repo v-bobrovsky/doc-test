@@ -18,7 +18,8 @@ namespace Documents.Services.Tests
         private static readonly string _testUserLogin = "test1@test.com";
         private static readonly string _testUserName = "Test User 1";
         private static readonly string _testUserPassword = "12345";
-        private static readonly string _testUserRole = "12345";
+        private static readonly string _testUserRole1 = "Manager";
+        private static readonly string _testUserRole2 = "Employee";
 
         private static readonly string _documentName = "Test document";
         private static readonly string _documentContent = "'Lorem ipsum' dolor sit amet, <br /> consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
@@ -111,7 +112,7 @@ namespace Documents.Services.Tests
                 UserName = _testUserName,
                 Login = _testUserLogin,
                 Password = _testUserPassword,
-                UserRole = _testUserRole
+                UserRole = _testUserRole1
             };
         }
 
@@ -121,7 +122,7 @@ namespace Documents.Services.Tests
             {
                 CreatedTime = DateTime.Now,
                 ModifiedTime = DateTime.Now,
-                UserRole = _testUserRole
+                UserRole = _testUserRole2
             };
         }
 
@@ -136,7 +137,7 @@ namespace Documents.Services.Tests
                     UserName = _testUserName,
                     Login = _testUserLogin,
                     Password = _testUserPassword,
-                    UserRole = _testUserRole
+                    UserRole = _testUserRole1
                 },
 
                 new UserDto()
@@ -146,7 +147,7 @@ namespace Documents.Services.Tests
                     UserName = _testUserName + "2",
                     Login = _testUserLogin + "2",
                     Password = _testUserPassword,
-                    UserRole = _testUserRole
+                    UserRole = _testUserRole2
                 }
             };
         }

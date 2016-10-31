@@ -36,7 +36,7 @@ namespace Documents.Data
                 && UserName == other.UserName
                 && Login == other.Login
                 && Password == other.Password               
-                /*&& UserRole == other.UserRole*/;
+                && UserRole == other.UserRole;
         }
     }
 }

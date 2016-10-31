@@ -10,6 +10,7 @@ using Documents.Filters;
 
 namespace Documents.Controllers
 {
+    [Authorize]
     public class CommentsController : BaseController
     {
         private readonly ICommentService _commentService;

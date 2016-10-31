@@ -9,6 +9,7 @@ using Documents.Services;
 
 namespace Documents.Controllers
 {
+    [Authorize]
     public class UsersController : BaseController
     {
         private readonly IUserService _userService;
@@ -51,7 +52,7 @@ namespace Documents.Controllers
         /// <param name="value"></param>
         /// <returns></returns>
         [UserPermissions(ContentOwner = "Own")]
-        public IHttpActionResult Put(int id, [FromBody]UserViewModel value)
+        public IHttpActionResult Put(int id, [FromBody]UserProfileViewModel value)
         {
             return PerformAction<UserDto>(() =>
             {

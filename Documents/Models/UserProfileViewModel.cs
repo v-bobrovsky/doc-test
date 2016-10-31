@@ -6,7 +6,7 @@ using System.Web;
 
 namespace Documents.Models
 {
-    public class UserViewModel
+    public class UserProfileViewModel
     {
         [Required]
         [StringLength(150, ErrorMessage = "The {0} must be at least {2} characters long.", MinimumLength = 1)]

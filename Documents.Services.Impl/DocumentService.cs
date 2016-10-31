@@ -119,10 +119,10 @@ namespace Documents.Services.Impl
         /// </returns>
         protected override IEnumerable<DocumentDto> OnGetAll(params object[] args)
         {
-            var isGetDocumentsByUserIdUserId = (args != null
+            var isGetDocumentsByUserId = (args != null
                 && args.Length == 1 && args[0] is int && (int)args[0] > 0);
             
-            if (isGetDocumentsByUserIdUserId)
+            if (isGetDocumentsByUserId)
                 return GetDocumentsByUserId((int)args[0]);
             else
                 return GetAllDocuments();

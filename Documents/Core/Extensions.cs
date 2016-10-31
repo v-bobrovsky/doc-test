@@ -1,12 +1,25 @@
-﻿using Documents.Data;
+﻿using System;
+
+using Documents.Data;
 using Documents.Models;
-using System;
 
 namespace Documents.Core
 {
     public static class Extensions
     {
-        public static UserDto ToDto(this UserViewModel model)
+        public static UserDto ToDto(this RegisterViewModel model)
+        {
+            return new UserDto()
+            {
+                Login = model.Login,
+                UserName = model.UserName,
+                Password = model.Password,
+                UserRole = model.UserRole
+            };
+        }
+
+        
+        public static UserDto ToDto(this UserProfileViewModel model)
         {
             return new UserDto()
             {

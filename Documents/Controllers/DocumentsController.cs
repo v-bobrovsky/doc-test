@@ -10,6 +10,7 @@ using Documents.Filters;
 
 namespace Documents.Controllers
 {
+    [Authorize]
     public class DocumentsController : BaseController
     {
         private readonly IDocumentService _documentService;

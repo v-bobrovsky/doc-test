@@ -44,7 +44,7 @@ namespace Documents.Services.Impl
                 && !String.IsNullOrEmpty(entityDto.Login)
                 && !String.IsNullOrEmpty(entityDto.Password)
                 && !String.IsNullOrEmpty(entityDto.UserName)
-                /*&& !String.IsNullOrEmpty(entityDto.UserRole)*/;
+                && !String.IsNullOrEmpty(entityDto.UserRole);
         }
 
         /// <summary>
@@ -59,7 +59,7 @@ namespace Documents.Services.Impl
                 && !String.IsNullOrEmpty(entityDto.Login)
                 && !String.IsNullOrEmpty(entityDto.Password)
                 && !String.IsNullOrEmpty(entityDto.UserName)
-                /*&& !String.IsNullOrEmpty(entityDto.UserRole)*/;
+                && !String.IsNullOrEmpty(entityDto.UserRole);
         }
  
         /// <summary>
@@ -123,13 +123,45 @@ namespace Documents.Services.Impl
         /// </returns>
         protected override IEnumerable<UserDto> OnGetAll(params object[] args)
         {
-            return GetAllUsers();
+            var isGetUsersByUserLogin = (args != null
+                && args.Length == 1 
+                && args[0] is string 
+                && !String.IsNullOrEmpty((string)args[0]));
+
+            if (isGetUsersByUserLogin)
+                return GetUsersByUserLogin((string)args[0]);
+            else
+                return GetAllUsers();
+        }
+
+        /// <summary>
+        /// Retrieves users by user login
+        /// </summary>
+        /// <param name="login">User login</param>
+        /// <returns>
+        /// List of <see cref="UserDto"/>s object containing the results.
+        /// </returns>
+        private IEnumerable<UserDto> GetUsersByUserLogin(string login)
+        {
+            List<UserDto> result = null;
+
+            var users = _unitOfWork
+                .UserRepository
+                .GetMany(u => !u.Deleted && u.Login == login)
+                .ToList();
+
+            if (users != null && users.Any())
+            {
+                result = new List<UserDto>();
+                users.ForEach(u => result.Add(u.ToDto()));
+            }
+
+            return result;
         }
 
         /// <summary>
         /// Retrieves all users
         /// </summary>
-        /// <param name="userId">User identifier</param>
         /// <returns>
         /// List of <see cref="UserDto"/>s object containing the results.
         /// </returns>

@@ -3,6 +3,7 @@ using System.Web.Http;
 
 using Documents.Utils;
 using Microsoft.Practices.Unity;
+using System.Text;
 
 namespace Documents.Core
 {
@@ -25,21 +26,41 @@ namespace Documents.Core
 
             try
             {
-                Logger.LogInfo(String.Format("Performing service - {0} for method - {1}",
+                Logger.LogInfo(String.Format("Performing controller - {0} for action - {1}",
                     this.GetType().Name, action.Method.Name));
 
-                if (!ModelState.IsValid)
+                if (ModelState.IsValid)
                 {
                     var retAction = action();
 
                     if (retAction != null)
+                    {
                         result = Ok<T>(retAction);
+                    }                       
                     else
+                    {
                         result = NotFound();
+                        Logger.LogError("Data not found!");
+                    }
+                        
                 }
                 else
                 {
-                    Logger.LogError(String.Format("Validation Performing controller action: {0}", action.Method.Name));
+                    var sbValidationErrors = new StringBuilder();
+
+                    sbValidationErrors.AppendLine("Validation data error(s):");
+
+                    foreach (var modelState in ModelState.Values)
+                    {
+                        foreach (var error in modelState.Errors)
+                        {
+                            sbValidationErrors.AppendLine(error.ErrorMessage);
+                        }
+                    }
+
+                    Logger.LogError(sbValidationErrors
+                        .ToString());
+
                     result = BadRequest(ModelState);
                 }
             }

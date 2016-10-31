@@ -22,30 +22,31 @@ namespace Documents
             return _container.Resolve<T>();
         }
 
-        public static void RegisterComponents(HttpConfiguration config)
+        static UnityConfig()
         {
-			var container = new UnityContainer();
-
-            container.RegisterType<ILogger, SimpleLogger>(new HierarchicalLifetimeManager());
-            container.RegisterType<IUserContext, UserContext>(new HierarchicalLifetimeManager());
+            _container.RegisterType<ILogger, SimpleLogger>(new HierarchicalLifetimeManager());
+            _container.RegisterType<IUserContext, UserContext>();
 
             IUserContext userCtx = _container.Resolve<IUserContext>();
 
-            container.RegisterType<IDocumentService, DocumentService>(new HierarchicalLifetimeManager(), 
+            _container.RegisterType<IDocumentService, DocumentService>(new HierarchicalLifetimeManager(),
                 new InjectionConstructor(userCtx));
-            container.RegisterType<ICommentService, CommentService>(new HierarchicalLifetimeManager(), 
+            _container.RegisterType<ICommentService, CommentService>(new HierarchicalLifetimeManager(),
                 new InjectionConstructor(userCtx));
-            container.RegisterType<IUserService, UserService>(new HierarchicalLifetimeManager(), 
+            _container.RegisterType<IUserService, UserService>(new HierarchicalLifetimeManager(),
                 new InjectionConstructor(userCtx));
+        }
 
-            config.DependencyResolver = new UnityResolver(container);
+        public static void RegisterComponents(HttpConfiguration config)
+        {
+            config.DependencyResolver = new UnityResolver(_container);
 
             //Register the filter injector
             var providers = config.Services.GetFilterProviders().ToList();
             var defaultprovider = providers.Single(i => i is ActionDescriptorFilterProvider);
 
             config.Services.Remove(typeof(IFilterProvider), defaultprovider);
-            config.Services.Add(typeof(IFilterProvider), new UnityFilterProvider(container));
+            config.Services.Add(typeof(IFilterProvider), new UnityFilterProvider(_container));
         }
     }
 }

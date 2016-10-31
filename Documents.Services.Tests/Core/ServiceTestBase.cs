@@ -124,7 +124,7 @@ namespace Documents.Services.Tests
                 var user = _unitOfWork
                     .UserRepository
                     .GetAll()
-                    .Where(p => p.Name == _userLogin && !p.Deleted)
+                    .Where(p => p.Login == _userLogin && !p.Deleted)
                     .FirstOrDefault();
 
                 if (user == null)
@@ -133,9 +133,10 @@ namespace Documents.Services.Tests
                     {
                         CreatedTime = DateTime.Now,
                         ModifiedTime = DateTime.Now,
-                        Name = _userLogin,
+                        Login = _userLogin,
                         UserName = _userName,
-                        Password = _userPassword
+                        Password = _userPassword,
+                        Role = Roles.Manager
                     };
 
                     using (var scope = new TransactionScope())

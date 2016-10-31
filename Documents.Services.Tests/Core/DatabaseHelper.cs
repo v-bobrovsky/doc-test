@@ -68,7 +68,7 @@ namespace Documents.Services.Tests
                     var deletedUsers = unitOfWork
                         .UserRepository
                         .GetAll()
-                        .Where(u => u.Name != testUserLogin)
+                        .Where(u => u.Login != testUserLogin)
                         .ToList();
 
                     deletedUsers.ForEach(u => unitOfWork
