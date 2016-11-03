@@ -37,8 +37,7 @@ namespace Documents.Core
         private Task PerformAsyncAction(Action action)
         {
             var task = Task
-                .Factory
-                .StartNew(() => 
+                .Run(() => 
                     {
                         try
                         {
@@ -65,8 +64,7 @@ namespace Documents.Core
         protected Task<ServiceUser> PerformAsyncFunction(Func<ServiceUser> action)
         {
             var task = Task<ServiceUser>
-                .Factory
-                .StartNew(() => 
+                .Run<ServiceUser>(() => 
                     {
                         try
                         {
@@ -89,9 +87,11 @@ namespace Documents.Core
         {
             return PerformAsyncAction(() => 
             {
-                var userDto = user.ToDto();
+                var userDto = user
+                    .ToDto();
 
-                userDto = _userService.Create(userDto);
+                userDto = _userService
+                    .Create(userDto);
 
                 if (userDto == null)
                     throw new Exception(String.Format(
@@ -104,9 +104,11 @@ namespace Documents.Core
         {
             return PerformAsyncAction(() =>
             {
-                var userDto = user.ToDto();
+                var userDto = user
+                    .ToDto();
 
-                if (!_userService.Delete(userDto.Id))
+                if (!_userService
+                    .Delete(userDto.Id))
                     throw new Exception(String.Format(
                         "Can't delete user with Id: {0}, login: {1}",
                         user.Id, user.UserName));
@@ -126,7 +128,8 @@ namespace Documents.Core
                     if (!Int32.TryParse(userId, out id))
                         id = 0;
 
-                    var userDto = _userService.Get(id);
+                    var userDto = _userService
+                        .Get(id);
 
                     if (userDto != null)
                         user = new ServiceUser(userDto);
@@ -144,9 +147,10 @@ namespace Documents.Core
 
                 if (!String.IsNullOrEmpty(userName))
                 {
-                    var usersDto = _userService.GetAll(userName);
+                    var usersDto = _userService
+                        .GetAll(userName);
 
-                    if (usersDto != null && !usersDto.Any())
+                    if (usersDto != null && usersDto.Any())
                         user = new ServiceUser(
                             usersDto
                             .FirstOrDefault());
@@ -163,7 +167,8 @@ namespace Documents.Core
             {
                 var userDto = user.ToDto();
 
-                userDto = _userService.Update(userDto);
+                userDto = _userService
+                    .Update(userDto);
 
                 if (userDto == null)
                     throw new Exception(String.Format(

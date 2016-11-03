@@ -71,7 +71,8 @@ namespace Documents.Services.Impl
         {
             CommentDto result = null;
 
-            var entity = entityDto.ToEntity();
+            var entity = entityDto
+                .ToEntity();
 
             if (entity != null)
             {

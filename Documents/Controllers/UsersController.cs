@@ -12,10 +12,12 @@ namespace Documents.Controllers
     [Authorize]
     public class UsersController : BaseController
     {
+        private readonly IUserContext _userContext;
         private readonly IUserService _userService;
 
-        public UsersController(IUserService userService)
+        public UsersController(IUserContext userContext, IUserService userService)
         {
+            _userContext = userContext;
             _userService = userService;
         }
 
@@ -23,56 +25,59 @@ namespace Documents.Controllers
         /// GET: api/Users
         /// </summary>
         /// <returns></returns>
-        public IHttpActionResult Get()
-        {
-            return PerformAction<IEnumerable<UserDto>>(() =>
-            {
-                return _userService.GetAll();
-            });
-        }
-
-        /// <summary>
-        /// GET: api/Users/5
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
         [UserPermissions(ContentOwner = "Own")]
-        public IHttpActionResult Get(int id)
+        public IHttpActionResult Get()
         {
             return PerformAction<UserDto>(() =>
             {
-                return _userService.Get(id);
+                var userId = _userContext
+                    .GetCurrentId();
+
+                var userDto = _userService
+                    .Get(userId);
+
+                userDto.Password = string.Empty;
+
+                return userDto;
             });
         }
 
         /// <summary>
         /// PUT: api/Users/5
         /// </summary>
-        /// <param name="id"></param>
         /// <param name="value"></param>
         /// <returns></returns>
         [UserPermissions(ContentOwner = "Own")]
-        public IHttpActionResult Put(int id, [FromBody]UserProfileViewModel value)
+        public IHttpActionResult Put([FromBody]UserProfileViewModel value)
         {
             return PerformAction<UserDto>(() =>
             {
-                var user = value.ToDto();
-                user.Id = id;
-                return _userService.Update(user);
+                var userDto = value
+                    .ToDto();
+
+                userDto.Id = _userContext
+                    .GetCurrentId();
+
+                return _userService
+                    .Update(userDto);
             });
         }
 
         /// <summary>
-        /// DELETE: api/Users/5
+        /// DELETE: api/Users
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
         [UserPermissions(ContentOwner = "Own")]
-        public IHttpActionResult Delete(int id)
+        public IHttpActionResult Delete()
         {
             return PerformAction<bool>(() =>
             {
-                return _userService.Delete(id);
+                var userId = _userContext
+                    .GetCurrentId();
+
+                return _userService
+                    .Delete(userId);
             });
         }
     }

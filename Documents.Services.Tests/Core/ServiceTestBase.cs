@@ -9,7 +9,7 @@ using Documents.Utils;
 using Documents.DataAccess;
 using System.Collections.Generic;
 
-namespace Documents.Services.Tests
+namespace Documents.Services.Tests.Core
 {
     [TestClass]
     public abstract class ServiceTestBase<TEntityDto, TIdentity>
@@ -64,32 +64,32 @@ namespace Documents.Services.Tests
         #region Abstract methods
 
         /// <summary>
-        /// 
+        /// Get entity identity from entity
         /// </summary>
         /// <param name="entityDto"></param>
         /// <returns></returns>
         protected abstract TIdentity GetIdentity(TEntityDto entityDto);
 
         /// <summary>
-        /// 
+        /// Prepare valid entity
         /// </summary>
         /// <returns></returns>
         protected abstract TEntityDto PrepareValidEntity();
 
         /// <summary>
-        /// Prepare valid entity
+        /// Prepare invalid entity
         /// </summary>
         /// <returns></returns>
         protected abstract TEntityDto PrepareInvalidEntity();
 
         /// <summary>
-        /// Prepare invalid entity
+        /// Prepare valid entities
         /// </summary>
         /// <returns></returns>
         protected abstract IEnumerable<TEntityDto> PrepareValidEntities();
 
         /// <summary>
-        /// 
+        /// Prepare valid entity with children
         /// </summary>
         /// <returns></returns>
         protected abstract TEntityDto PrepareAndCreateValidEntityWithChildren();

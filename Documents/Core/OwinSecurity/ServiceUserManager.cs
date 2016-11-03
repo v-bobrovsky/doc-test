@@ -54,7 +54,7 @@ namespace Documents.Core
                 RequireUppercase = true,
             };
 
-            var dataProtectionProvider = options.DataProtectionProvider;
+            //var dataProtectionProvider = options.DataProtectionProvider;
             
             //if (dataProtectionProvider != null)
             //{
@@ -64,21 +64,63 @@ namespace Documents.Core
             return manager;
         }
 
+        public override Task<ClaimsIdentity> CreateIdentityAsync(ServiceUser user, string authenticationType)
+        {
+            var task = Task
+                .Run<ClaimsIdentity>(() =>
+            {
+                var result = new ClaimsIdentity(
+                    authenticationType,
+                    ClaimsIdentity.DefaultNameClaimType,
+                    ClaimsIdentity.DefaultRoleClaimType);
+
+                result.AddClaim(
+                    new Claim(ClaimTypes.NameIdentifier,
+                        user.Id,
+                        ClaimValueTypes.String));
+
+                result.AddClaim(
+                    new Claim(ClaimsIdentity.DefaultNameClaimType,
+                        user.ToDto().Login,
+                        ClaimValueTypes.String));
+
+                result.AddClaim(
+                    new Claim("http://schemas.microsoft.com/accesscontrolservice/2010/07/claims/identityprovider",
+                        "OWIN Provider",
+                        ClaimValueTypes.String));
+
+                result.AddClaim(
+                    new Claim(ClaimsIdentity.DefaultRoleClaimType,
+                        user.ToDto().UserRole, 
+                        ClaimValueTypes.String));
+
+                return result;
+            });
+
+            return task;	
+        }
+
         public override Task<bool> IsInRoleAsync(string userId, string role)
         {
-            var task = Task<bool>.Factory.StartNew(() =>
+            var task = Task
+                .Run<bool>(() =>
             {
                 var result = false;
 
-                 var serviceUser = Store
-                     .FindByIdAsync(userId)
-                     .Result;
+                Store
+                    .FindByIdAsync(userId)
+                    .ContinueWith(t => 
+                     {
+                         var serviceUser = t.Result;
 
-                if (serviceUser != null && !String.IsNullOrEmpty(role))
-                {
-                    var userDto = serviceUser.ToDto();
-                    result = (userDto.UserRole.ToLower() == role.ToLower().Trim());
-                }
+                         if (serviceUser != null && !String.IsNullOrEmpty(role))
+                         {
+                             var userDto = serviceUser
+                                 .ToDto();
+
+                             result = (userDto.UserRole.ToLower() == role.ToLower().Trim());
+                         }
+                     });
 
                 return result;
             });
@@ -86,6 +128,7 @@ namespace Documents.Core
             return task;
         }
 
+        /*
         public override Task<string> GenerateUserTokenAsync(string purpose, string userId)
         {
             var task = Task<string>.Factory.StartNew(() =>
@@ -156,7 +199,8 @@ namespace Documents.Core
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(String.Format("Failed to decrypt user token: {0}", token));
+                        _logger.LogError(String
+                            .Format("Failed to decrypt user token: {0}", token));
                         _logger.LogError(ex);
                     }
                 }
@@ -165,11 +209,12 @@ namespace Documents.Core
             });
 
             return task;
-        }
+        }*/
 
         public override Task<IdentityResult> UpdateAsync(ServiceUser user)
         {
-            var task = Task<IdentityResult>.Factory.StartNew(() =>
+            var task = Task
+                .Run<IdentityResult>(() =>
             {
                 IdentityResult result = null;
 
@@ -178,11 +223,14 @@ namespace Documents.Core
                     Store
                         .UpdateAsync(user)
                         .Wait();
-                    result = IdentityResult.Success;
+
+                    result = IdentityResult
+                        .Success;
                 }
-                catch
+                catch (Exception e)
                 {
-                    result = IdentityResult.Failed();
+                    result = IdentityResult
+                        .Failed(e.Message);
                 }
 
                 return result;
@@ -193,7 +241,8 @@ namespace Documents.Core
 
         public override Task<IdentityResult> CreateAsync(ServiceUser user)
         {
-            var task = Task<IdentityResult>.Factory.StartNew(() =>
+            var task = Task
+                .Run<IdentityResult>(() =>
             {
                 IdentityResult result = null;
 
@@ -202,11 +251,14 @@ namespace Documents.Core
                     Store
                         .CreateAsync(user)
                         .Wait();
-                    result = IdentityResult.Success;
+
+                    result = IdentityResult
+                        .Success;
                 }
-                catch
+                catch (Exception e)
                 {
-                    result = IdentityResult.Failed();
+                    result = IdentityResult
+                        .Failed(e.Message);
                 }
 
                 return result;
@@ -217,7 +269,8 @@ namespace Documents.Core
 
         public override Task<IdentityResult> DeleteAsync(ServiceUser user)
         {
-            var task = Task<IdentityResult>.Factory.StartNew(() =>
+            var task = Task
+                .Run<IdentityResult>(() =>
             {
                 IdentityResult result = null;
 
@@ -227,11 +280,13 @@ namespace Documents.Core
                         .DeleteAsync(user)
                         .Wait();
 
-                    result = IdentityResult.Success;
+                    result = IdentityResult
+                        .Success;
                 }
-                catch
+                catch (Exception e)
                 {
-                    result = IdentityResult.Failed();
+                    result = IdentityResult
+                        .Failed(e.Message);
                 }
 
                 return result;
@@ -242,23 +297,27 @@ namespace Documents.Core
 
         public override Task<IList<string>> GetRolesAsync(string userId)
         {
-            var task = Task<IList<string>>.Factory.StartNew(() =>
+            var task = Task
+                .Run<IList<string>>(() =>
             {
                 IList<string> result = null;
 
-                var serviceUser = Store
+                Store
                     .FindByIdAsync(userId)
-                    .Result;
-
-                if (serviceUser != null)
-                {
-                    var userDto = serviceUser.ToDto();
-
-                    result = new List<string>()
+                    .ContinueWith(t => 
                     {
-                        userDto.UserRole
-                    };
-                }
+                        var serviceUser = t.Result;
+
+                        if (serviceUser != null)
+                        {
+                            var userDto = serviceUser.ToDto();
+
+                            result = new List<string>()
+                            {
+                                userDto.UserRole
+                            };
+                        }
+                    });
 
                 return result;
             });
@@ -266,12 +325,18 @@ namespace Documents.Core
             return task;
         }
 
-
         public override Task<ServiceUser> FindByIdAsync(string userId)
         {
-            return Store.FindByIdAsync(userId);
+            return Store
+                .FindByIdAsync(userId);
         }
 
+        public override Task<ServiceUser> FindByNameAsync(string userName)
+        {
+            return Store
+                .FindByNameAsync(userName);
+        }
+        
         public override Task<ServiceUser> FindAsync(string userName, string password)
         {
             var task = Task<ServiceUser>.Factory.StartNew(() =>
@@ -281,9 +346,9 @@ namespace Documents.Core
                 if (PasswordHasher.VerifyHashedPassword(
                     userName, password) == PasswordVerificationResult.SuccessRehashNeeded)
                 {
-                    result = Store
+                    Store
                         .FindByNameAsync(userName)
-                        .Result;
+                        .ContinueWith(t => result = t.Result);
                 }
 
                 return result;

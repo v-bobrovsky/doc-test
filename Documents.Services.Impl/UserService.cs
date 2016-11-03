@@ -73,7 +73,8 @@ namespace Documents.Services.Impl
         {
             UserDto result = null;
 
-            var entity = entityDto.ToEntity();
+            var entity = entityDto
+                .ToEntity();
 
             if (entity != null)
             {
@@ -87,7 +88,8 @@ namespace Documents.Services.Impl
                     scope.Complete();
                 }
 
-                result = entity.ToDto();
+                result = entity
+                    .ToDto();
             }
 
             return result;

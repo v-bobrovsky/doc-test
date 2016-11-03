@@ -7,7 +7,7 @@ using log4net.Config;
 namespace Documents.Utils
 {
     /// <summary>
-    /// Logs different types of messages to a log file.
+    /// Provides the logger functionality.
     /// </summary>
     public class SimpleLogger : ILogger
     {

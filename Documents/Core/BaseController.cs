@@ -4,6 +4,7 @@ using System.Web.Http;
 using Documents.Utils;
 using Microsoft.Practices.Unity;
 using System.Text;
+using System.Security.Authentication;
 
 namespace Documents.Core
 {

@@ -159,12 +159,12 @@
     <Compile Include="Controllers\CommentsController.cs" />
     <Compile Include="Controllers\DocumentsController.cs" />
     <Compile Include="Core\Extensions.cs" />
-    <Compile Include="Core\ServiceUserStore .cs" />
-    <Compile Include="Core\UnityResolver.cs" />
-    <Compile Include="Core\UnityFilterProvider.cs" />
-    <Compile Include="Core\ServiceUserManager.cs" />
+    <Compile Include="Core\OwinSecurity\ServiceUserStore .cs" />
+    <Compile Include="Core\Unity\UnityResolver.cs" />
+    <Compile Include="Core\Unity\UnityFilterProvider.cs" />
+    <Compile Include="Core\OwinSecurity\ServiceUserManager.cs" />
     <Compile Include="Core\BaseController.cs" />
-    <Compile Include="Core\ServiceUserPasswordHasher.cs" />
+    <Compile Include="Core\OwinSecurity\ServiceUserPasswordHasher.cs" />
     <Compile Include="Core\UserContext.cs" />
     <Compile Include="Filters\CommentPermissions.cs" />
     <Compile Include="Filters\DocumentPermissions.cs" />

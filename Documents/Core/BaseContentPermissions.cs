@@ -3,9 +3,15 @@ using System.Web;
 using System.Web.Http;
 using System.Web.Http.Controllers;
 
+using Microsoft.Owin.Security;
+using Microsoft.AspNet.Identity;
+using Microsoft.Owin.Security.OAuth;
+using Microsoft.Owin.Security.Cookies;
+using Microsoft.AspNet.Identity.Owin;
+
 namespace Documents.Core
 {
-    public abstract class BaseContentPermissions: AuthorizeAttribute
+    public abstract class BaseContentPermissions : AuthorizeAttribute
     {
         #region Members
 
@@ -38,19 +44,23 @@ namespace Documents.Core
 
         protected override bool IsAuthorized(HttpActionContext actionContext)
         {
-            var result = base.IsAuthorized(actionContext);
+            var result = base
+                .IsAuthorized(actionContext);
 
             if (result)
             {
                 if (!String.IsNullOrEmpty(Roles))
-                    allowedRoles = Roles.Split(new char[1] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+                    allowedRoles = Roles
+                        .Split(new char[1] { ',' }, 
+                                StringSplitOptions.RemoveEmptyEntries);
 
                 if (allowedRoles == null)
                     allowedRoles = new string[0];
 
-                result = //actionContext.Request.IsAuthenticated &&
-                     IsInRole(actionContext) && IsContentAccess(actionContext);
 
+                result = IsCurrentUserAuthenticated() && 
+                    IsInRole(actionContext) && 
+                    IsContentAccess(actionContext);
             }
 
             return result;
@@ -71,9 +81,52 @@ namespace Documents.Core
             return result;
         }
 
+        /// <summary>
+        /// Check is authenticated current user
+        /// </summary>
+        /// <returns></returns>
+        private bool IsCurrentUserAuthenticated()
+        {
+            var result = false;
+
+            if (HttpContext.Current != null &&
+                HttpContext.Current.User != null &&
+                HttpContext.Current.User.Identity != null)
+            {
+                result = HttpContext
+                    .Current
+                    .User
+                    .Identity
+                    .IsAuthenticated;
+            }
+
+            return result;
+        }
 
         /// <summary>
-        /// 
+        /// Get current user role
+        /// </summary>
+        /// <returns></returns>
+        private string GetCurrentUserRole()
+        {
+            var result = string.Empty;
+
+            if (HttpContext.Current != null &&
+                HttpContext.Current.User != null &&
+                HttpContext.Current.User.Identity != null)
+            {
+                result = HttpContext
+                    .Current
+                    .User
+                    .Identity
+                    .GetUserRole();
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Check user is in role
         /// </summary>
         /// <param name="actionContext"></param>
         /// <returns></returns>
@@ -83,16 +136,21 @@ namespace Documents.Core
 
             if (allowedRoles.Length > 0)
             {
-                //result = false;
+                result = false;
 
-                //for (int i = 0; i < allowedRoles.Length; i++)
-                //{
-                //    if (actionContext.User.IsInRole(allowedRoles[i]))
-                //    {
-                //        result = true;
-                //        break;
-                //    }
-                //}
+                var currentUserRole = GetCurrentUserRole();
+
+                if (!String.IsNullOrEmpty(currentUserRole))
+                {
+                    for (int i = 0; i < allowedRoles.Length; i++)
+                    {
+                        if (allowedRoles[i].ToLower().Trim() == currentUserRole.ToLower().Trim())
+                        {
+                            result = true;
+                            break;
+                        }
+                    }
+                }
             }
 
             return result;

@@ -67,7 +67,8 @@ namespace Documents.Services.Impl
         /// </returns>
         protected override DocumentDto OnCreate(DocumentDto entityDto)
         {
-            var entity = entityDto.ToEntity();
+            var entity = entityDto
+                .ToEntity();
 
             using (var scope = new TransactionScope())
             {
@@ -84,7 +85,8 @@ namespace Documents.Services.Impl
                 .GetWithInclude(p => p.Id.Equals(entity.Id), "User")
                 .FirstOrDefault();
 
-            return entity.ToDto(true);
+            return entity
+                .ToDto(true);
         }
 
         /// <summary>

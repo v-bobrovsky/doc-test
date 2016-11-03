@@ -28,7 +28,8 @@ namespace Documents.Controllers
         {
             return PerformAction<IEnumerable<DocumentDto>>(() =>
             {
-                return _documentService.GetAll();
+                return _documentService
+                    .GetAll();
             });
         }
 
@@ -41,7 +42,8 @@ namespace Documents.Controllers
         {
             return PerformAction<DocumentDto>(() =>
             {
-                return _documentService.Get(id);
+                return _documentService
+                    .Get(id);
             });
         }
 
@@ -55,8 +57,11 @@ namespace Documents.Controllers
         {
             return PerformAction<DocumentDto>(() =>
             {
-                var document = data.ToDto();
-                return _documentService.Create(document);
+                var document = data
+                    .ToDto();
+
+                return _documentService
+                    .Create(document);
             });
         }
 
@@ -71,10 +76,13 @@ namespace Documents.Controllers
         {
             return PerformAction<DocumentDto>(() =>
             {
-                var document = data.ToDto();
+                var document = data
+                    .ToDto();
+
                 document.Id = id;
 
-                return _documentService.Create(document);
+                return _documentService
+                    .Create(document);
             });
         }
 
@@ -88,7 +96,8 @@ namespace Documents.Controllers
         {
             return PerformAction<bool>(() =>
             {
-                return _documentService.Delete(id);
+                return _documentService
+                    .Delete(id);
             });
         }
     }

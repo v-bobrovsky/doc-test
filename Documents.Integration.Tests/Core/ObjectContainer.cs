@@ -1,14 +1,14 @@
-﻿using Documents.DataAccess;
-using Documents.Services.Impl;
-using Documents.Utils;
-using Microsoft.Practices.Unity;
+﻿using Microsoft.Practices.Unity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Documents.Services.Tests.Core
+using Documents.DataAccess;
+using Documents.Utils;
+
+namespace Documents.Integration.Tests.Core
 {
     /// <summary>
     /// Helper class for unity DI
@@ -34,16 +34,6 @@ namespace Documents.Services.Tests.Core
         {
             _container.RegisterType<ILogger, SimpleLogger>();
             _container.RegisterType<IUnitOfWork, UnitOfWork>();
-            _container.RegisterType<IUserContext, TestUserContext>();
-
-            IUserContext userCtx = _container.Resolve<IUserContext>();
-
-            _container.RegisterType<IDocumentService, DocumentService>(new HierarchicalLifetimeManager(),
-                new InjectionConstructor(userCtx));
-            _container.RegisterType<ICommentService, CommentService>(new HierarchicalLifetimeManager(),
-                new InjectionConstructor(userCtx));
-            _container.RegisterType<IUserService, UserService>(new HierarchicalLifetimeManager(),
-                new InjectionConstructor(userCtx));
         }
     }
 }

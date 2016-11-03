@@ -21,7 +21,7 @@ namespace Documents.Controllers
         }
 
         /// <summary>
-        /// GET: api/Comments
+        /// GET: api/Comments/?documentId=543D3EC2-BD1F-4AD1-9DAA-D37BE8375893
         /// </summary>
         /// <param name="documentId"></param>
         /// <returns></returns>
@@ -29,7 +29,8 @@ namespace Documents.Controllers
         {
             return PerformAction<IEnumerable<CommentDto>>(() =>
             {
-                return _commentService.GetAll(documentId);
+                return _commentService
+                    .GetAll(documentId);
             });
         }
 
@@ -42,7 +43,8 @@ namespace Documents.Controllers
         {
             return PerformAction<CommentDto>(() =>
             {
-                return _commentService.Get(id);
+                return _commentService
+                    .Get(id);
             });
         }
 
@@ -55,8 +57,11 @@ namespace Documents.Controllers
         {
             return PerformAction<CommentDto>(() =>
             {
-                var comment = data.ToDto();
-                return _commentService.Create(comment);
+                var comment = data
+                    .ToDto();
+
+                return _commentService
+                    .Create(comment);
             });
         }
 
@@ -71,9 +76,13 @@ namespace Documents.Controllers
         {
             return PerformAction<CommentDto>(() =>
             {
-                var comment = data.ToDto();
+                var comment = data
+                    .ToDto();
+
                 comment.Id = id;
-                return _commentService.Create(comment);
+
+                return _commentService
+                    .Create(comment);
             });
         }
 
@@ -87,7 +96,8 @@ namespace Documents.Controllers
         {
             return PerformAction<bool>(() =>
             {
-                return _commentService.Delete(id);
+                return _commentService
+                    .Delete(id);
             });
         }
     }

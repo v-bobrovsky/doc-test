@@ -1,20 +1,68 @@
 ﻿using System;
+using System.Web;
+using System.Collections.Generic;
 
 using Documents.Data;
 using Documents.Services;
+using Documents.Models;
 
 namespace Documents.Core
 {
     public class UserContext : IUserContext
     {
+        private static Dictionary<int, UserDto> _users = 
+            new Dictionary<int, UserDto>();
+
         public int GetCurrentId()
         {
-            return 0;
+            var result = 0;
+
+            if (HttpContext.Current != null && 
+                HttpContext.Current.User != null && 
+                HttpContext.Current.User.Identity != null)
+            {
+                var userId = HttpContext
+                    .Current
+                    .User
+                    .Identity
+                    .GetUserId<string>();
+
+                if (!Int32.TryParse(userId, out result))
+                    result = 0;
+            }
+
+            return result;
+        }
+
+        public void SetUser(UserDto user)
+        {
+            if (user != null)
+            {
+                if (!_users.ContainsKey(user.Id))
+                    _users.Add(user.Id, user);
+                else
+                    _users[user.Id] = user;
+            }
+        }
+
+        public void ClearUser()
+        {
+            var userId = GetCurrentId();
+
+            if (_users.ContainsKey(userId))
+                _users.Remove(userId);
         }
 
         public UserDto GetCurrentUser()
         {
-            return new UserDto();
+            UserDto result = null;
+
+            var userId = GetCurrentId();
+
+            if (_users.ContainsKey(userId))
+                result = _users[userId];
+
+            return result;
         }
     }
 }

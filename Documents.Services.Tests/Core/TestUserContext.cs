@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Documents.Services.Tests
+namespace Documents.Services.Tests.Core
 {
     public class TestUserContext: IUserContext
     {

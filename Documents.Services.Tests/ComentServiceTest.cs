@@ -6,6 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Documents.Data;
 using Documents.Common;
 using System.Transactions;
+using Documents.Services.Tests.Core;
 
 namespace Documents.Services.Tests
 {

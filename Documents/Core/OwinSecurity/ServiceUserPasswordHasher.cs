@@ -13,14 +13,14 @@ namespace Documents.Core
     {
         public override string HashPassword(string password)
         {
-            return base.HashPassword(password);
+            return password;
         }
 
         public override PasswordVerificationResult VerifyHashedPassword(string hashedPassword, string providedPassword)
         {
             var result = PasswordVerificationResult.Failed;
 
-            if (hashedPassword == base.HashPassword(providedPassword))
+            if (hashedPassword == providedPassword)
                 result = PasswordVerificationResult.SuccessRehashNeeded;
 
             return result;

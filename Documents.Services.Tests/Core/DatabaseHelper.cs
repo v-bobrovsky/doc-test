@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Transactions;
 
-namespace Documents.Services.Tests
+namespace Documents.Services.Tests.Core
 {
     /// <summary>
     /// Database helper class
