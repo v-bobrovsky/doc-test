@@ -10,21 +10,30 @@ using Documents.Filters;
 
 namespace Documents.Controllers
 {
+    /// <summary>
+    /// Provides CRUD functionality for documents.
+    /// </summary>
     [Authorize]
     public class DocumentsController : BaseController
     {
+        private readonly IUserContext _userContext;
         private readonly IDocumentService _documentService;
 
-        public DocumentsController(IDocumentService documentService)
+        public DocumentsController(IUserContext userContext, IDocumentService documentService)
         {
+            _userContext = userContext;
             _documentService = documentService;
         }
 
         /// <summary>
+        /// Retrieves list of all documents.
         /// GET: api/Documents
         /// </summary>
-        /// <returns></returns>
-        public IHttpActionResult Get()
+        /// <returns>
+        /// <see cref="IEnumerable&lt;DocumentDto&gt;"/>s object containing the list of documents.
+        /// </returns>
+        [HttpGet]
+        public IHttpActionResult Retrive()
         {
             return PerformAction<IEnumerable<DocumentDto>>(() =>
             {
@@ -34,11 +43,15 @@ namespace Documents.Controllers
         }
 
         /// <summary>
+        /// Retrives a specific document by identity.
         /// GET: api/Documents/543D3EC2-BD1F-4AD1-9DAA-D37BE8375893
         /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
-        public IHttpActionResult Get(Guid id)
+        /// <param name="id">Document identity</param>
+        /// <returns>
+        /// <see cref="DocumentDto"/>s object containing the document dto entity.
+        /// </returns>
+        [HttpGet]
+        public IHttpActionResult Retrive(Guid id)
         {
             return PerformAction<DocumentDto>(() =>
             {
@@ -48,49 +61,78 @@ namespace Documents.Controllers
         }
 
         /// <summary>
+        /// Creates a new document.
         /// POST: api/Documents
         /// </summary>
-        /// <param name="data"></param>
-        /// <returns></returns>
-        [DocumentPermissions(Roles = "Manager")]
-        public IHttpActionResult Post([FromBody]DocumentViewModel data)
+        /// <param name="data">Document data. Name field is mandatory.</param>
+        /// <returns>
+        /// <see cref="DocumentDto"/>s object containing the document dto entity.
+        /// </returns>
+        [HttpPost]
+        [DocumentPermissions(Roles = "Manager", ContentOwner = "Own")]       
+        public IHttpActionResult Create([FromBody]DocumentViewModel data)
         {
             return PerformAction<DocumentDto>(() =>
             {
+                DocumentDto result = null;
+
                 var document = data
                     .ToDto();
 
-                return _documentService
-                    .Create(document);
+                if (document != null)
+                {
+                    document.UserId = _userContext
+                        .GetCurrentId();
+
+                    result = _documentService
+                        .Create(document);
+                }
+
+                return result;
             });
         }
 
         /// <summary>
+        /// Updates a specific document by identity.
         /// PUT: api/Documents/543D3EC2-BD1F-4AD1-9DAA-D37BE8375893
         /// </summary>
-        /// <param name="id"></param>
-        /// <param name="data"></param>
-        /// <returns></returns>
+        /// <param name="id">Document identity</param>
+        /// <param name="data">Document data. Name field is mandatory.</param>
+        /// <returns>
+        /// <see cref="DocumentDto"/>s object containing the document dto entity.
+        /// </returns>
+        [HttpPut]
         [DocumentPermissions(Roles = "Manager", ContentOwner = "Own")]
-        public IHttpActionResult Put(Guid id, [FromBody]DocumentViewModel data)
+        public IHttpActionResult Update(Guid id, [FromBody]DocumentViewModel data)
         {
             return PerformAction<DocumentDto>(() =>
             {
-                var document = data
-                    .ToDto();
+                DocumentDto result = null;
 
-                document.Id = id;
+                var documentDto = _documentService
+                    .Get(id);
 
-                return _documentService
-                    .Create(document);
+                if (documentDto != null)
+                {
+                    documentDto = data
+                        .ToDto(documentDto);
+
+                    result = _documentService
+                        .Update(documentDto);
+                }
+
+                return result;
             });
         }
 
         /// <summary>
+        /// Delete a specific document by identity.
         /// DELETE: api/Documents/543D3EC2-BD1F-4AD1-9DAA-D37BE8375893 
         /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
+        /// <returns>
+        /// True if successfully otherwise False.
+        /// </returns>
+        [HttpDelete]
         [DocumentPermissions(Roles = "Manager", ContentOwner = "Own")]
         public IHttpActionResult Delete(Guid id)
         {

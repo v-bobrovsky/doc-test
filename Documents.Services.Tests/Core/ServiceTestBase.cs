@@ -8,6 +8,7 @@ using Documents.Common;
 using Documents.Utils;
 using Documents.DataAccess;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace Documents.Services.Tests.Core
 {
@@ -26,7 +27,6 @@ namespace Documents.Services.Tests.Core
         #region Members
 
         protected readonly ILogger _logger;
-        protected readonly IUnitOfWork _unitOfWork;
         protected readonly IUserContext _userCtx;
 
         protected IRepositoryService<TEntityDto, TIdentity> _testService;       
@@ -105,7 +105,6 @@ namespace Documents.Services.Tests.Core
                 DatabaseHelper.Cleanup(_userLogin);
 
             _logger = ObjectContainer.Resolve<SimpleLogger>();
-            _unitOfWork = ObjectContainer.Resolve<UnitOfWork>();
             _userCtx = ObjectContainer.Resolve<TestUserContext>();
             _testService = null;
         }
@@ -121,39 +120,44 @@ namespace Documents.Services.Tests.Core
 
             if (result == null)
             {
-                var user = _unitOfWork
-                    .UserRepository
-                    .GetAll()
-                    .Where(p => p.Login == _userLogin && !p.Deleted)
-                    .FirstOrDefault();
-
-                if (user == null)
+                using (var unitOfWork = ObjectContainer.Resolve<UnitOfWork>())
                 {
-                    user = new User()
-                    {
-                        CreatedTime = DateTime.Now,
-                        ModifiedTime = DateTime.Now,
-                        Login = _userLogin,
-                        UserName = _userName,
-                        Password = _userPassword,
-                        Role = Roles.Manager
-                    };
+                    var user = unitOfWork
+                        .UserRepository
+                        .GetAll()
+                        .Where(p => p.Login == _userLogin && !p.Deleted)
+                        .FirstOrDefault();
 
-                    using (var scope = new TransactionScope())
+                    if (user == null)
                     {
-                        _unitOfWork
-                            .UserRepository
-                            .Insert(user);
+                        user = new User()
+                        {
+                            CreatedTime = DateTime.Now,
+                            ModifiedTime = DateTime.Now,
+                            Login = _userLogin,
+                            UserName = _userName,
+                            Password = _userPassword,
+                            Role = Roles.Manager
+                        };
 
-                        _unitOfWork.Save();
-                        scope.Complete();
+                        using (var scope = new TransactionScope())
+                        {
+                            unitOfWork
+                                .UserRepository
+                                .Insert(user);
+
+                            unitOfWork
+                                .Save();
+                            scope.Complete();
+                        }
                     }
+
+                    result = user
+                        .ToDto();
+
+                    ((TestUserContext)_userCtx)
+                        .SetUser(result);
                 }
-
-                 result = user.ToDto();
-
-                ((TestUserContext)_userCtx)
-                    .SetUser(result);
             }
 
             return result;
@@ -195,6 +199,8 @@ namespace Documents.Services.Tests.Core
 
             Assert.IsNotNull(loadedData);
             Assert.AreEqual(insertedData, loadedData);
+
+            Thread.Sleep(2000);
 
             var updatedData = _testService.Update(insertedData);
 

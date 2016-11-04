@@ -11,6 +11,9 @@ using Microsoft.AspNet.Identity.Owin;
 
 namespace Documents.Core
 {
+    /// <summary>
+    /// Provides base functionality to implement security permissions for specific content
+    /// </summary>
     public abstract class BaseContentPermissions : AuthorizeAttribute
     {
         #region Members
@@ -42,6 +45,11 @@ namespace Documents.Core
         /// <returns></returns>
         protected abstract bool CheckIsOwnContent(HttpActionContext actionContext);
 
+        /// <summary>
+        /// Indicates whether the specified control is authorized.
+        /// </summary>
+        /// <param name="actionContext"></param>
+        /// <returns></returns>
         protected override bool IsAuthorized(HttpActionContext actionContext)
         {
             var result = base
@@ -67,10 +75,12 @@ namespace Documents.Core
         }
 
         /// <summary>
-        /// Check 
+        /// Check have user permissions to access for content
         /// </summary>
         /// <param name="actionContext"></param>
-        /// <returns></returns>
+        /// <returns>
+        /// True if successfullly otherwise False
+        /// </returns>
         private bool IsContentAccess(HttpActionContext actionContext)
         {
             var result = true;
@@ -84,7 +94,9 @@ namespace Documents.Core
         /// <summary>
         /// Check is authenticated current user
         /// </summary>
-        /// <returns></returns>
+        /// <returns>
+        /// True if authenticated otherwise False
+        /// </returns>
         private bool IsCurrentUserAuthenticated()
         {
             var result = false;
@@ -126,10 +138,12 @@ namespace Documents.Core
         }
 
         /// <summary>
-        /// Check user is in role
+        /// Check is user have a specific role
         /// </summary>
         /// <param name="actionContext"></param>
-        /// <returns></returns>
+        /// <returns>
+        /// True if user have a specific role
+        /// </returns>
         private bool IsInRole(HttpActionContext actionContext)
         {
             var result = true;

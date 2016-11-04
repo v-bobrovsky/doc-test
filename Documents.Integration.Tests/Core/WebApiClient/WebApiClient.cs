@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Documents.Utils;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,13 +15,18 @@ namespace Documents.Integration.Tests.Core
     /// </summary>
     public class WebApiHttpClient
     {
+        #region Constants
+
+        private static readonly string _sessionKey = ".AspNet.ApplicationCookie";
+
+        #endregion
+
         #region Members 
 
-        public string Adress
-        {
-            get;
-            protected set;
-        }
+        private readonly ILogger _logger = null;
+        private static string _sessionValue = "";
+
+        private string _address = "";
 
         #endregion
 
@@ -29,9 +35,19 @@ namespace Documents.Integration.Tests.Core
         {
             WebApiResponse result = new WebApiResponse();
 
+            Uri uri = null;
+
             try
             {
-                HttpClient client = new HttpClient();
+                var cookieContainer = new CookieContainer();
+                var handler = new HttpClientHandler
+                {
+                    UseCookies = true,
+                    UseDefaultCredentials = true,
+                    CookieContainer = cookieContainer
+                };
+
+                var client = new HttpClient(handler);
 
                 string url = string.Empty;
 
@@ -40,43 +56,71 @@ namespace Documents.Integration.Tests.Core
                 if (request.HttpMethod == HttpMethod.Get)
                 {
                     url = String.Format("http://{0}/{1}/{2}", 
-                        Adress, 
+                        _address, 
                         request.Controller,
                         ((request.Value != null && request.Value is String) 
                             ? (request.Value  as String)
                             : String.Empty));
-                        
-                        response = client
-                            .GetAsync(url)
-                            .Result;
+
+                    url = url.Replace("=/", "=");
                 }
                 else if (request.HttpMethod == HttpMethod.Post)
                 {
                     url = String.Format("http://{0}/{1}", 
-                        Adress, 
+                        _address, 
                         request.Controller);
+                }
+                else if (request.HttpMethod == HttpMethod.Put)
+                {
+                    url = String.Format("http://{0}/{1}", 
+                        _address,
+                        request.Controller);
+                }
+                else if (request.HttpMethod == HttpMethod.Delete)
+                {
+                    url = String.Format("http://{0}/{1}/{2}", 
+                        _address, 
+                        request.Controller, 
+                        (request.Value as String));
+                }
 
+                if (!String.IsNullOrEmpty(url))
+                    uri = new Uri(url);
+
+                _logger.LogInfo(String.Format("{0} {1}\r\nParams:", 
+                    request.HttpMethod.Method, url));
+
+                if (!(request.Value is String))
+                    _logger.LogInfoObject(request.Value);
+
+                if (!String.IsNullOrEmpty(_sessionValue))
+                {
+                    cookieContainer.Add(uri, new Cookie(_sessionKey, _sessionValue));
+
+                    _logger.LogInfo(String.Format("Cookies:\r\n{0}={1}",
+                        _sessionKey, _sessionValue));
+                }
+                    
+                if (request.HttpMethod == HttpMethod.Get)
+                {
+                    response = client
+                        .GetAsync(url)
+                        .Result;
+                }
+                else if (request.HttpMethod == HttpMethod.Post)
+                {
                     response = client
                         .PostAsJsonAsync<T>(url, request.Value)
                         .Result;
                 }
                 else if (request.HttpMethod == HttpMethod.Put)
                 {
-                    url = String.Format("http://{0}/{1}", 
-                        Adress,
-                        request.Controller);
-
                     response = client
                         .PutAsJsonAsync<T>(url, request.Value)
                         .Result;
                 }
                 else if (request.HttpMethod == HttpMethod.Delete)
                 {
-                    url = String.Format("http://{0}/{1}/{2}", 
-                        Adress, 
-                        request.Controller, 
-                        (request.Value as String));
-
                     response = client
                         .DeleteAsync(url)
                         .Result;
@@ -92,16 +136,34 @@ namespace Documents.Integration.Tests.Core
                         .ReadAsStringAsync()
                         .Result;
 
+                    var responseCookies = cookieContainer
+                        .GetCookies(uri)
+                        .Cast<Cookie>();
+
+                    foreach (Cookie cookie in responseCookies)
+                    {
+                        if (cookie.Name.ToLower() == _sessionKey.ToLower())
+                        {
+                            _sessionValue = cookie.Value;
+                            break;
+                        }
+                    }
+
                     result.Code = response
                         .StatusCode;
 
                     result.Response = serverResponse;
 
                     result.Result = true;
+
+                    _logger.LogInfo(String.Format("Http code: {0}\r\nResponse:\r\n{1}",
+                        result.Code, result.Response));
                 }
             }
             catch (HttpRequestException hre)
             {
+                _logger.LogError(hre);
+
                 var msg = hre.Message;
 
                 if (msg.Contains("404 "))
@@ -123,6 +185,8 @@ namespace Documents.Integration.Tests.Core
             }
             catch (Exception ex) 
             {
+                _logger.LogError(ex);
+
                 result.Response = ex
                     .ToString();
                 result
@@ -133,12 +197,22 @@ namespace Documents.Integration.Tests.Core
         }
 
         /// <summary>
+        /// Clear session
+        /// </summary>
+        public void ClearSession()
+        {
+            _sessionValue = string.Empty;
+        }
+
+        /// <summary>
         /// Constructor
         /// </summary>
+        /// <param name="logger"></param>
         /// <param name="address"></param>
-        public WebApiHttpClient(string address)
+        public WebApiHttpClient(ILogger logger, string address)
         {
-            this.Adress = address;
+            _logger = logger;
+            _address = address;
         }
     }
 }

@@ -8,11 +8,18 @@ using Documents.Models;
 
 namespace Documents.Core
 {
+    /// <summary>
+    /// User context
+    /// </summary>
     public class UserContext : IUserContext
     {
         private static Dictionary<int, UserDto> _users = 
             new Dictionary<int, UserDto>();
 
+        /// <summary>
+        /// Get current user id
+        /// </summary>
+        /// <returns></returns>
         public int GetCurrentId()
         {
             var result = 0;
@@ -34,6 +41,10 @@ namespace Documents.Core
             return result;
         }
 
+        /// <summary>
+        /// Set current user
+        /// </summary>
+        /// <param name="user"></param>
         public void SetUser(UserDto user)
         {
             if (user != null)
@@ -45,6 +56,9 @@ namespace Documents.Core
             }
         }
 
+        /// <summary>
+        /// Remove current user
+        /// </summary>
         public void ClearUser()
         {
             var userId = GetCurrentId();
@@ -53,6 +67,10 @@ namespace Documents.Core
                 _users.Remove(userId);
         }
 
+        /// <summary>
+        /// Get current user
+        /// </summary>
+        /// <returns></returns>
         public UserDto GetCurrentUser()
         {
             UserDto result = null;

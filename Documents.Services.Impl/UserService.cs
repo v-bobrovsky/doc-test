@@ -78,18 +78,22 @@ namespace Documents.Services.Impl
 
             if (entity != null)
             {
-                using (var scope = new TransactionScope())
+                using (var unitOfWork = ObjectContainer.Resolve<UnitOfWork>())
                 {
-                    _unitOfWork
-                        .UserRepository
-                        .Insert(entity);
+                    using (var scope = new TransactionScope())
+                    {
+                        unitOfWork
+                            .UserRepository
+                            .Insert(entity);
 
-                    _unitOfWork.Save();
-                    scope.Complete();
+                        unitOfWork
+                            .Save();
+                        scope.Complete();
+                    }
+
+                    result = entity
+                        .ToDto();
                 }
-
-                result = entity
-                    .ToDto();
             }
 
             return result;
@@ -106,12 +110,16 @@ namespace Documents.Services.Impl
         {
             UserDto result = null;
 
-            var user = _unitOfWork
-                .UserRepository
-                .GetByID(id);
+            using (var unitOfWork = ObjectContainer.Resolve<UnitOfWork>())
+            {
+                var user = unitOfWork
+                    .UserRepository
+                    .GetByID(id);
 
-            if (user != null && !user.Deleted)
-                result = user.ToDto();
+                if (user != null && !user.Deleted)
+                    result = user
+                        .ToDto();
+            }
 
             return result;
         }
@@ -147,15 +155,18 @@ namespace Documents.Services.Impl
         {
             List<UserDto> result = null;
 
-            var users = _unitOfWork
-                .UserRepository
-                .GetMany(u => !u.Deleted && u.Login == login)
-                .ToList();
-
-            if (users != null && users.Any())
+            using (var unitOfWork = ObjectContainer.Resolve<UnitOfWork>())
             {
-                result = new List<UserDto>();
-                users.ForEach(u => result.Add(u.ToDto()));
+                var users = unitOfWork
+                    .UserRepository
+                    .GetMany(u => !u.Deleted && u.Login == login)
+                    .ToList();
+
+                if (users != null && users.Any())
+                {
+                    result = new List<UserDto>();
+                    users.ForEach(u => result.Add(u.ToDto()));
+                }
             }
 
             return result;
@@ -171,15 +182,18 @@ namespace Documents.Services.Impl
         {
             List<UserDto> result = null;
 
-            var users = _unitOfWork
-                .UserRepository
-                .GetMany(u => !u.Deleted)
-                .ToList();
-
-            if (users != null && users.Any())
+            using (var unitOfWork = ObjectContainer.Resolve<UnitOfWork>())
             {
-                result = new List<UserDto>();
-                users.ForEach(u => result.Add(u.ToDto()));
+                var users = unitOfWork
+                    .UserRepository
+                    .GetMany(u => !u.Deleted)
+                    .ToList();
+
+                if (users != null && users.Any())
+                {
+                    result = new List<UserDto>();
+                    users.ForEach(u => result.Add(u.ToDto()));
+                }
             }
 
             return result;
@@ -196,27 +210,32 @@ namespace Documents.Services.Impl
         {
             UserDto result = null;
 
-            var oldEntity = _unitOfWork
-                .UserRepository
-                .GetByID(entityDto.Id);
-
-            var entity = (oldEntity != null)
-                ? entityDto.ToEntity(oldEntity)
-                : null;
-
-            if (entity != null)
+            using (var unitOfWork = ObjectContainer.Resolve<UnitOfWork>())
             {
-                using (var scope = new TransactionScope())
+                var oldEntity = unitOfWork
+                    .UserRepository
+                    .GetByID(entityDto.Id);
+
+                var entity = (oldEntity != null)
+                    ? entityDto.ToEntity(oldEntity)
+                    : null;
+
+                if (entity != null)
                 {
-                    _unitOfWork
-                        .UserRepository
-                        .Update(entity);
+                    using (var scope = new TransactionScope())
+                    {
+                        unitOfWork
+                            .UserRepository
+                            .Update(entity);
 
-                    _unitOfWork.Save();
-                    scope.Complete();
+                        unitOfWork
+                            .Save();
+                        scope.Complete();
+                    }
+
+                    result = entity
+                        .ToDto();
                 }
-
-                result = entity.ToDto();
             }
 
             return result;
@@ -231,25 +250,29 @@ namespace Documents.Services.Impl
         {
             bool result = false;
 
-            var entity = _unitOfWork
-                .UserRepository
-                .GetByID(id);
-
-            if (entity != null)
+            using (var unitOfWork = ObjectContainer.Resolve<UnitOfWork>())
             {
-                using (var scope = new TransactionScope())
+                var entity = unitOfWork
+                    .UserRepository
+                    .GetByID(id);
+
+                if (entity != null)
                 {
-                    entity.Deleted = true;
+                    using (var scope = new TransactionScope())
+                    {
+                        entity.Deleted = true;
 
-                    _unitOfWork
-                        .UserRepository
-                        .Update(entity);
+                        unitOfWork
+                            .UserRepository
+                            .Update(entity);
 
-                    _unitOfWork.Save();
-                    scope.Complete();
+                        unitOfWork
+                            .Save();
+                        scope.Complete();
+                    }
+
+                    result = true;
                 }
-
-                result = true;
             }
 
             return result;

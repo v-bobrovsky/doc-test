@@ -24,6 +24,11 @@ namespace Documents.Core
 
         #endregion
        
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="logger"></param>
+        /// <param name="store"></param>
         public ServiceUserManager(ILogger logger, IUserStore<ServiceUser> store)
             : base(store)
         {
@@ -31,6 +36,12 @@ namespace Documents.Core
             this.PasswordHasher = new ServiceUserPasswordHasher();
         }
 
+        /// <summary>
+        /// Create user manager
+        /// </summary>
+        /// <param name="options"></param>
+        /// <param name="context"></param>
+        /// <returns></returns>
         public static ServiceUserManager Create(IdentityFactoryOptions<ServiceUserManager> options, IOwinContext context)
         {
             var logger = UnityConfig.Resolve<SimpleLogger>();
@@ -54,16 +65,15 @@ namespace Documents.Core
                 RequireUppercase = true,
             };
 
-            //var dataProtectionProvider = options.DataProtectionProvider;
-            
-            //if (dataProtectionProvider != null)
-            //{
-            //    manager.UserTokenProvider = new DataProtectorTokenProvider<ApplicationUser>(dataProtectionProvider.Create("ASP.NET Identity"));
-            //}
-
             return manager;
         }
 
+        /// <summary>
+        /// Creates a ClaimsIdentity representing the user
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="authenticationType"></param>
+        /// <returns></returns>
         public override Task<ClaimsIdentity> CreateIdentityAsync(ServiceUser user, string authenticationType)
         {
             var task = Task
@@ -100,6 +110,12 @@ namespace Documents.Core
             return task;	
         }
 
+        /// <summary>
+        /// Returns true if the user is in the specified role
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="role"></param>
+        /// <returns></returns>
         public override Task<bool> IsInRoleAsync(string userId, string role)
         {
             var task = Task
@@ -128,89 +144,11 @@ namespace Documents.Core
             return task;
         }
 
-        /*
-        public override Task<string> GenerateUserTokenAsync(string purpose, string userId)
-        {
-            var task = Task<string>.Factory.StartNew(() =>
-            {
-                var result = string.Empty;
-                var id = 0;
-
-                if (!String.IsNullOrEmpty(userId) 
-                    && !Int32.TryParse(userId, out id))
-                    id = 0;
-
-                if (id > 0)
-                {
-                    var key = new byte[4];
-                    
-                    BitConverter
-                        .GetBytes(id)
-                        .CopyTo(key, 0);
-
-                    var time = BitConverter
-                        .GetBytes(
-                        DateTime.Now
-                        .AddDays(1)
-                        .ToBinary());
-
-                    var tokenData = new List<byte>();
-                    
-                    tokenData.AddRange(key);
-                    tokenData.AddRange(time);
-
-                    result = Convert
-                        .ToBase64String(
-                            tokenData.ToArray());
-                }
-
-                return result;
-            });
-
-            return task;
-        }
-
-        public override Task<bool> VerifyUserTokenAsync(string userId, string purpose, string token)
-        {
-            var task = Task<bool>.Factory.StartNew(() =>
-            {
-                var result = false;
-
-                if (!String.IsNullOrEmpty(token) && !String.IsNullOrEmpty(userId))
-                {
-                    try
-                    {
-                        byte[] bytes = Convert
-                            .FromBase64String(token);
-
-                        var key = new byte[4];
-                        var time = new byte[(bytes.Length - 4)];
-
-                        BitConverter.ToInt32(bytes, 0);
-
-                        Array.Copy(bytes, 0, key, 0, key.Length);
-                        Array.Copy(bytes, 4, time, 0, time.Length);
-
-                        var id = BitConverter.ToInt32(key, 0);
-                        var tokenCreated = DateTime.FromBinary(
-                            BitConverter.ToInt64(time, 0));
-
-                        result = (id.ToString() == userId.Trim() && tokenCreated >= DateTime.Now);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(String
-                            .Format("Failed to decrypt user token: {0}", token));
-                        _logger.LogError(ex);
-                    }
-                }
-
-                return result;
-            });
-
-            return task;
-        }*/
-
+        /// <summary>
+        /// Update a user
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
         public override Task<IdentityResult> UpdateAsync(ServiceUser user)
         {
             var task = Task
@@ -239,6 +177,11 @@ namespace Documents.Core
             return task;
         }
 
+        /// <summary>
+        /// Create a user with no password
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
         public override Task<IdentityResult> CreateAsync(ServiceUser user)
         {
             var task = Task
@@ -267,6 +210,11 @@ namespace Documents.Core
             return task;
         }
 
+        /// <summary>
+        /// Delete a user
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
         public override Task<IdentityResult> DeleteAsync(ServiceUser user)
         {
             var task = Task
@@ -295,6 +243,11 @@ namespace Documents.Core
             return task;
         }
 
+        /// <summary>
+        /// Returns the roles for the user
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
         public override Task<IList<string>> GetRolesAsync(string userId)
         {
             var task = Task
@@ -302,22 +255,25 @@ namespace Documents.Core
             {
                 IList<string> result = null;
 
-                Store
-                    .FindByIdAsync(userId)
-                    .ContinueWith(t => 
+                var findUserTask = Store
+                    .FindByIdAsync(userId);
+
+                findUserTask
+                    .Wait();
+
+                var serviceUser = findUserTask
+                    .Result;
+
+                if (serviceUser != null)
+                {
+                    var userDto = serviceUser
+                        .ToDto();
+
+                    result = new List<string>()
                     {
-                        var serviceUser = t.Result;
-
-                        if (serviceUser != null)
-                        {
-                            var userDto = serviceUser.ToDto();
-
-                            result = new List<string>()
-                            {
-                                userDto.UserRole
-                            };
-                        }
-                    });
+                        userDto.UserRole
+                    };
+                }
 
                 return result;
             });
@@ -325,30 +281,56 @@ namespace Documents.Core
             return task;
         }
 
+        /// <summary>
+        ///  Find a user by id
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
         public override Task<ServiceUser> FindByIdAsync(string userId)
         {
             return Store
                 .FindByIdAsync(userId);
         }
 
+        /// <summary>
+        /// Find a user by user name
+        /// </summary>
+        /// <param name="userName"></param>
+        /// <returns></returns>
         public override Task<ServiceUser> FindByNameAsync(string userName)
         {
             return Store
                 .FindByNameAsync(userName);
         }
         
+        /// <summary>
+        ///  Return a user with the specified username and password or null if there is 
+        ///  no match.
+        /// </summary>
+        /// <param name="userName"></param>
+        /// <param name="password"></param>
+        /// <returns></returns>
         public override Task<ServiceUser> FindAsync(string userName, string password)
         {
-            var task = Task<ServiceUser>.Factory.StartNew(() =>
+            var task = Task
+                .Run<ServiceUser>(() =>
             {
                 ServiceUser result = null;
 
-                if (PasswordHasher.VerifyHashedPassword(
-                    userName, password) == PasswordVerificationResult.SuccessRehashNeeded)
+                var findUserTask = Store
+                    .FindByNameAsync(userName);
+
+                findUserTask
+                    .Wait();
+
+                var user = findUserTask
+                    .Result;
+
+                if (user != null && 
+                    PasswordHasher.VerifyHashedPassword(user.ToDto().Password, 
+                        password) == PasswordVerificationResult.SuccessRehashNeeded)
                 {
-                    Store
-                        .FindByNameAsync(userName)
-                        .ContinueWith(t => result = t.Result);
+                    result = user;
                 }
 
                 return result;

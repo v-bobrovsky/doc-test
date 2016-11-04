@@ -5,6 +5,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Documents.DataAccess;
 using Documents.Integration.Tests.Core;
+using System.Threading;
 
 namespace Documents.Integration.Tests
 {
@@ -56,81 +57,90 @@ namespace Documents.Integration.Tests
             DatabaseHelper
                 .CleanupForUser(_testEmployeeUserLogin);
 
-            //Add manager user
-            var managerUser = new User()
+            using (var unitOfWork = ObjectContainer.Resolve<UnitOfWork>())
             {
-                CreatedTime = DateTime.Now,
-                ModifiedTime = DateTime.Now,
-                Login = _testManagerUserLogin,
-                UserName = _testManagerUserName,
-                Password = _testManagerUserPassword,
-                Role = Roles.Manager
-            };
+                //Add manager user
+                var managerUser = new User()
+                {
+                    CreatedTime = DateTime.Now,
+                    ModifiedTime = DateTime.Now,
+                    Login = _testManagerUserLogin,
+                    UserName = _testManagerUserName,
+                    Password = _testManagerUserPassword,
+                    Role = Roles.Manager
+                };
 
-            using (var scope = new TransactionScope())
-            {
-                _unitOfWork
-                    .UserRepository
-                    .Insert(managerUser);
+                using (var scope = new TransactionScope())
+                {
+                    unitOfWork
+                        .UserRepository
+                        .Insert(managerUser);
 
-                _unitOfWork.Save();
-                scope.Complete();
+                    unitOfWork
+                        .Save();
+                    scope.Complete();
+                }
+
+                _managerUserId = managerUser.UserId;
+
+                //Add new document from manager
+                var document = new Document()
+                {
+                    Id = System.Guid.NewGuid(),
+                    CreatedTime = DateTime.Now,
+                    ModifiedTime = DateTime.Now,
+                    Name = _documentName,
+                    Content = _documentContent,
+                    UserId = _managerUserId
+                };
+
+                using (var scope = new TransactionScope())
+                {
+                    unitOfWork
+                         .DocumentRepository
+                         .Insert(document);
+
+                    unitOfWork
+                        .Save();
+                    scope.Complete();
+                }
+
+                _managerDocumentId = document.Id;
+
+                //Add new comment from manager
+                var comment = new Comment()
+                {
+                    CreatedTime = DateTime.Now,
+                    ModifiedTime = DateTime.Now,
+                    DocumentId = _managerDocumentId,
+                    UserId = _managerUserId,
+                    Subject = _commentSubj,
+                    Content = _commentContent
+                };
+
+                using (var scope = new TransactionScope())
+                {
+                    unitOfWork
+                        .CommentRepository
+                        .Insert(comment);
+
+                    unitOfWork.Save();
+                    scope.Complete();
+                }
+
+                _managerCommentId = comment.Id;
             }
-
-            _managerUserId = managerUser.UserId;
-
-            //Add new document from manager
-            var document = new Document() 
-            {
-                Id = System.Guid.NewGuid(),
-                CreatedTime = DateTime.Now,
-                ModifiedTime = DateTime.Now,
-                Name = _documentName,
-                Content = _documentContent,
-                UserId = _managerUserId
-            };
-
-            using (var scope = new TransactionScope())
-            {
-                _unitOfWork
-                     .DocumentRepository
-                     .Insert(document);
-
-                _unitOfWork.Save();
-                scope.Complete();
-            }
-
-            _managerDocumentId = document.Id;
-
-            //Add new comment from manager
-            var comment = new Comment()
-            {
-                CreatedTime = DateTime.Now,
-                ModifiedTime = DateTime.Now,
-                DocumentId = _managerDocumentId,
-                UserId = _managerUserId,
-                Subject = _commentSubj,
-                Content = _commentContent
-            };
-
-            using (var scope = new TransactionScope())
-            {
-                _unitOfWork
-                    .CommentRepository
-                    .Insert(comment);
-
-                _unitOfWork.Save();
-                scope.Complete();
-            }
-
-            _managerCommentId = comment.Id;
         }
 
-
         [TestMethod]
-        public void T0_RegisterAccount_Successfully()
+        public void T00_RegisterEmployee_Successfully()
         {
             SetupTestData();
+
+            LogoutUser();
+
+            Thread
+                .Sleep(1000);
 
             RegisterUser(_testEmployeeUserName,
                 _testEmployeeUserLogin,
@@ -144,7 +154,7 @@ namespace Documents.Integration.Tests
         }
 
         [TestMethod]
-        public void T1_SaveAccount_Successfully()
+        public void T01_UpdateEmployee_Successfully()
         {
             var userDto = RetriveUser();
 
@@ -152,7 +162,7 @@ namespace Documents.Integration.Tests
             Assert.AreEqual(userDto.Login, _testEmployeeUserLogin);
 
             var newUserName = userDto.UserName + " !";
-            var newUserPassword = userDto.UserName + "!";
+            var newUserPassword = _testEmployeeUserPassword + "!";
 
             var editUserDto = EditUser(newUserName, 
                 userDto.Login, 
@@ -162,6 +172,9 @@ namespace Documents.Integration.Tests
             Assert.AreEqual(editUserDto.UserName, newUserName);
 
             LogoutUser();
+
+            Thread
+                .Sleep(1000);
 
             LoginUser(_testEmployeeUserLogin, 
                 newUserPassword);
@@ -173,7 +186,7 @@ namespace Documents.Integration.Tests
         }
 
         [TestMethod]
-        public void T2_SaveOwnComment_Successfully()
+        public void T02_SaveEmployeeComment_Successfully()
         {
             var commmentDto = AddComment(_managerDocumentId, 
                 _commentSubj, 
@@ -196,7 +209,7 @@ namespace Documents.Integration.Tests
         }
 
         [TestMethod]
-        public void T3_GetDocumentsAndComments_Successfully()
+        public void T03_GetDocumentsAndComments_Successfully()
         {
             var documentsDto = RetriveDocuments();
 
@@ -229,7 +242,7 @@ namespace Documents.Integration.Tests
         }
 
         [TestMethod]
-        public void T4_DeleteOwnComment_Successfully()
+        public void T04_DeleteEmployeeComment_Successfully()
         {
             var commmentDto = RetriveComment(_employeeCommentId);
 
@@ -239,16 +252,16 @@ namespace Documents.Integration.Tests
 
             DeleteComment(_employeeCommentId);
 
-            commmentDto = RetriveComment(_employeeCommentId);
+            commmentDto = RetriveDeletedComment(_employeeCommentId);
             Assert.IsNull(commmentDto);
 
             _employeeCommentId = 0;
         }
 
         [TestMethod]
-        public void T5_DeleteManagerComment_Error()
+        public void T05_EmployeeDeleteManagerComment_Error()
         {
-            DeleteComment(_managerCommentId);
+            DeleteCommentError(_managerCommentId);
 
             var commmentDto = RetriveComment(_managerCommentId);
 
@@ -257,48 +270,56 @@ namespace Documents.Integration.Tests
         }
 
         [TestMethod]
-        public void T6_CreateDocument_Error()
+        public void T06_EmployeeCreateDocument_Error()
         {
-            var documentDto = AddDocument(_documentName, 
+            AddDocumentError(_documentName, 
                 _documentContent);
-
-            Assert.IsNull(documentDto);
         }
 
         [TestMethod]
-        public void T7_SaveDocument_Error()
+        public void T07_EmployeeSaveDocument_Error()
         {
             var documentDto = RetriveDocument(_managerDocumentId);
 
             Assert.IsNotNull(documentDto);
             Assert.AreEqual(documentDto.CanModify, false);
 
-            var editDocumentDto = EditDocument(_managerDocumentId,
-                "Changed", 
-                _documentContent);
+            EditDocumentError(_managerDocumentId, "Changed", _documentContent);
 
-            Assert.IsNull(editDocumentDto);
+            documentDto = RetriveDocument(_managerDocumentId);
+
+            Assert.IsNotNull(documentDto);
+            Assert.AreNotEqual(documentDto.Name, "Changed");
+            Assert.AreEqual(documentDto.CanModify, false);
         }
 
         [TestMethod]
-        public void T8_DeleteDocument_Error()
+        public void T08_EmployeeDeleteDocument_Error()
         {
-            DeleteDocument(_managerDocumentId);
+            DeleteDocumentError(_managerDocumentId);
+
+            var documentDto = RetriveDocument(_managerDocumentId);
+
+            Assert.IsNotNull(documentDto);
+            Assert.AreEqual(documentDto.CanModify, false);
         }
 
         [TestMethod]
-        public void T9_DeleteAccount_Successfully()
+        public void T09_DeleteEmployee_Successfully()
         {
             var result = DeleteUser();
             Assert.IsTrue(result);
 
-            var deleteUser = _unitOfWork
-                .UserRepository
-                .GetAll()
-                .Where(u => u.Login == _testEmployeeUserLogin && u.Deleted)
-                .FirstOrDefault();
+            using (var unitOfWork = ObjectContainer.Resolve<UnitOfWork>())
+            {
+                var deleteUser = unitOfWork
+                    .UserRepository
+                    .GetAll()
+                    .Where(u => u.Login == _testEmployeeUserLogin && u.Deleted)
+                    .FirstOrDefault();
 
-            Assert.IsNotNull(deleteUser);           
+                Assert.IsNotNull(deleteUser);
+            }
         }
     }
 }

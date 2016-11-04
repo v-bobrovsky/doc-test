@@ -22,7 +22,7 @@ namespace Documents.Integration.Tests.Core
 
         private static readonly string _commentsControllerName = "comments";
         private static readonly string _documentsControllerName = "documents";
-        private static readonly string _usersControllerName = "users";
+        private static readonly string _usersControllerName = "userInfo";
 
         private static readonly string _accountRegisterManagerControllerName = "account/register/manager";
         private static readonly string _accountRegisterEmployeeControllerName = "account/register/employee";
@@ -34,7 +34,6 @@ namespace Documents.Integration.Tests.Core
         #region Members
 
         protected readonly ILogger _logger;
-        protected readonly IUnitOfWork _unitOfWork;
         protected readonly WebApiHttpClient _webApiClient;
 
         #endregion
@@ -45,12 +44,11 @@ namespace Documents.Integration.Tests.Core
         public ServiceTestBase()
         {
             _logger = ObjectContainer.Resolve<SimpleLogger>();
-            _unitOfWork = ObjectContainer.Resolve<UnitOfWork>();
 
             var webApiAddress = ConfigurationManager
                 .AppSettings["WebApiAddress"];
 
-            _webApiClient = new WebApiHttpClient(webApiAddress);
+            _webApiClient = new WebApiHttpClient(_logger, webApiAddress);
         }
 
         /// <summary>
@@ -186,8 +184,8 @@ namespace Documents.Integration.Tests.Core
             var response = CreateDataByApi<string>(
                 _accountLogoutControllerName, null);
 
-            Assert.IsNotNull(response);
-            Assert.IsTrue(response.Result);
+            _webApiClient
+                .ClearSession();
         }
       
         /// <summary>
@@ -229,6 +227,26 @@ namespace Documents.Integration.Tests.Core
 
             Assert.IsNotNull(response);
             Assert.IsTrue(response.Result);
+
+            return response
+                .To<CommentDto>();
+        }
+
+        /// <summary>
+        /// Retrive deleted comment by web api
+        /// </summary>
+        /// <param name="id">Comment id</param>
+        /// <returns>
+        /// <see cref="CommentDto"/>s object containing the new comment.
+        /// </returns>
+        protected CommentDto RetriveDeletedComment(int id)
+        {
+            var response = RetriveDataByApi<string>(
+                    _commentsControllerName,
+                    id.ToString());
+
+            Assert.IsNotNull(response);
+            Assert.IsFalse(response.Result);
 
             return response
                 .To<CommentDto>();
@@ -347,6 +365,26 @@ namespace Documents.Integration.Tests.Core
         }
 
         /// <summary>
+        /// Retrive deleted exists document by web api
+        /// </summary>
+        /// <param name="id">Document Id</param>
+        /// <returns>
+        /// <see cref="DocumentDto"/>s object containing the new comment.
+        /// </returns>
+        protected DocumentDto RetriveDeletedDocument(Guid id)
+        {
+            var response = RetriveDataByApi<string>(
+                    _documentsControllerName,
+                    id.ToString());
+
+            Assert.IsNotNull(response);
+            Assert.IsFalse(response.Result);
+
+            return response
+                .To<DocumentDto>();
+        }
+
+        /// <summary>
         /// Retrive exists document by web api
         /// </summary>
         /// <param name="id">Document Id</param>
@@ -412,6 +450,25 @@ namespace Documents.Integration.Tests.Core
         }
 
         /// <summary>
+        /// Add new document error by web api
+        /// </summary>
+        /// <param name="name">Document name</param>
+        /// <param name="content">Document text</param>
+        protected void AddDocumentError(string name, string content)
+        {
+            var response = CreateDataByApi<DocumentViewModel>(
+                _documentsControllerName,
+                new DocumentViewModel()
+                {
+                    Name = name,
+                    Content = content
+                });
+
+            Assert.IsNotNull(response);
+            Assert.IsFalse(response.Result);
+        }
+
+        /// <summary>
         /// Edit exists comment by web api
         /// </summary>
         /// <param name="id">Comment id</param>
@@ -442,7 +499,7 @@ namespace Documents.Integration.Tests.Core
         }
 
         /// <summary>
-        /// Edit new document by web api
+        /// Edit exist document by web api
         /// </summary>
         /// <param name="documentId">Document Id</param>
         /// <param name="name">Document name</param>
@@ -468,11 +525,34 @@ namespace Documents.Integration.Tests.Core
         }
 
         /// <summary>
+        /// Edit exist document error by web api
+        /// </summary>
+        /// <param name="documentId">Document Id</param>
+        /// <param name="name">Document name</param>
+        /// <param name="content">Document text</param>
+        /// <returns>
+        /// <see cref="DocumentDto"/>s object containing the new document.
+        /// </returns>
+        protected void EditDocumentError(Guid documentId, string name, string content)
+        {
+            var response = CreateDataByApi<DocumentViewModel>(
+                _documentsControllerName,
+                new DocumentViewModel()
+                {
+                    Name = name,
+                    Content = content
+                });
+
+            Assert.IsNotNull(response);
+            Assert.IsFalse(response.Result);
+        }
+
+        /// <summary>
         /// Delete exists comment by web api
         /// </summary>
         /// <param name="id">Comment id</param>
         /// <returns>
-        /// <see cref="CommentDto"/>s object containing the new comment.
+        /// True is successfully otherwise False
         /// </returns>
         protected bool DeleteComment(int id)
         {
@@ -485,6 +565,20 @@ namespace Documents.Integration.Tests.Core
 
             return response
                 .To<bool>();
+        }
+
+        /// <summary>
+        /// Delete comment error by web api
+        /// </summary>
+        /// <param name="id">Comment id</param>
+        protected void DeleteCommentError(int id)
+        {
+            var response = RemoveDataByApi(
+                _commentsControllerName,
+                id.ToString());
+
+            Assert.IsNotNull(response);
+            Assert.IsFalse(response.Result);
         }
 
         /// <summary>
@@ -502,6 +596,20 @@ namespace Documents.Integration.Tests.Core
 
             return response
                 .To<bool>();
+        }
+
+        /// <summary>
+        /// Delete exists document error by web api
+        /// </summary>
+        /// <param name="documentId">Document Id</param>
+        protected void DeleteDocumentError(Guid documentId)
+        {
+            var response = RemoveDataByApi(
+                _documentsControllerName,
+                documentId.ToString());
+
+            Assert.IsNotNull(response);
+            Assert.IsFalse(response.Result);
         }
     }
 }

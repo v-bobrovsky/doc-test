@@ -70,20 +70,24 @@ namespace Documents.Services.Impl
             var entity = entityDto
                 .ToEntity();
 
-            using (var scope = new TransactionScope())
+            using (var unitOfWork = ObjectContainer.Resolve<UnitOfWork>())
             {
-                _unitOfWork
+                using (var scope = new TransactionScope())
+                {
+                    unitOfWork
+                        .DocumentRepository
+                        .Insert(entity);
+
+                    unitOfWork
+                        .Save();
+                    scope.Complete();
+                }
+
+                entity = unitOfWork
                     .DocumentRepository
-                    .Insert(entity);
-
-                _unitOfWork.Save();
-                scope.Complete();
+                    .GetWithInclude(p => p.Id.Equals(entity.Id), "User")
+                    .FirstOrDefault();
             }
-
-            entity = _unitOfWork
-                .DocumentRepository
-                .GetWithInclude(p => p.Id.Equals(entity.Id), "User")
-                .FirstOrDefault();
 
             return entity
                 .ToDto(true);
@@ -98,15 +102,18 @@ namespace Documents.Services.Impl
         {
             DocumentDto result = null;
 
-            var document = _unitOfWork
-                .DocumentRepository
-                .GetWithInclude(p => p.Id.Equals(id), "User")
-                .FirstOrDefault();
-            
-            if (document != null)
+            using (var unitOfWork = ObjectContainer.Resolve<UnitOfWork>())
             {
-                result = document
-                    .ToDto(_userCtx.GetCurrentId() == document.UserId);
+                var document = unitOfWork
+                    .DocumentRepository
+                    .GetWithInclude(p => p.Id.Equals(id), "User")
+                    .FirstOrDefault();
+
+                if (document != null)
+                {
+                    result = document
+                        .ToDto(_userCtx.GetCurrentId() == document.UserId);
+                }
             }
 
             return result;
@@ -140,17 +147,20 @@ namespace Documents.Services.Impl
         {
             List<DocumentDto> result = null;
 
-            var documents = _unitOfWork
-                .DocumentRepository
-                .GetWithInclude(p => true, "User")
-                .ToList();
-
-            if (documents != null && documents.Any())
+            using (var unitOfWork = ObjectContainer.Resolve<UnitOfWork>())
             {
-                var userId = _userCtx.GetCurrentId();
+                var documents = unitOfWork
+                    .DocumentRepository
+                    .GetWithInclude(p => true, "User")
+                    .ToList();
 
-                result = new List<DocumentDto>();
-                documents.ForEach(d => result.Add(d.ToDto(userId == d.UserId)));
+                if (documents != null && documents.Any())
+                {
+                    var userId = _userCtx.GetCurrentId();
+
+                    result = new List<DocumentDto>();
+                    documents.ForEach(d => result.Add(d.ToDto(userId == d.UserId)));
+                }
             }
 
             return result;
@@ -168,15 +178,18 @@ namespace Documents.Services.Impl
         {
             List<DocumentDto> result = null;
 
-            var documents = _unitOfWork
-                .DocumentRepository
-                .GetWithInclude(p => p.UserId == userId, "User")
-                .ToList();
-
-            if (documents != null && documents.Any())
+            using (var unitOfWork = ObjectContainer.Resolve<UnitOfWork>())
             {
-                result = new List<DocumentDto>();
-                documents.ForEach(d => result.Add(d.ToDto(true)));
+                var documents = unitOfWork
+                    .DocumentRepository
+                    .GetWithInclude(p => p.UserId == userId, "User")
+                    .ToList();
+
+                if (documents != null && documents.Any())
+                {
+                    result = new List<DocumentDto>();
+                    documents.ForEach(d => result.Add(d.ToDto(true)));
+                }
             }
 
             return result;
@@ -193,32 +206,36 @@ namespace Documents.Services.Impl
         {
             DocumentDto result = null;
 
-            var oldEntity = _unitOfWork
-                .DocumentRepository
-                .GetByID(entityDto.Id);
-
-            var entity = (oldEntity != null)
-                ? entityDto.ToEntity(oldEntity)
-                : null;
-
-            if (entity != null)
+            using (var unitOfWork = ObjectContainer.Resolve<UnitOfWork>())
             {
-                using (var scope = new TransactionScope())
-                {
-                    _unitOfWork
-                        .DocumentRepository
-                        .Update(entity);
-
-                    _unitOfWork.Save();
-                    scope.Complete();
-                }
-
-                entity = _unitOfWork
+                var oldEntity = unitOfWork
                     .DocumentRepository
-                    .GetWithInclude(p => p.Id.Equals(entity.Id), "User")
-                    .FirstOrDefault();
+                    .GetByID(entityDto.Id);
 
-                result = entity.ToDto(true);
+                var entity = (oldEntity != null)
+                    ? entityDto.ToEntity(oldEntity)
+                    : null;
+
+                if (entity != null)
+                {
+                    using (var scope = new TransactionScope())
+                    {
+                        unitOfWork
+                            .DocumentRepository
+                            .Update(entity);
+
+                        unitOfWork
+                            .Save();
+                        scope.Complete();
+                    }
+
+                    entity = unitOfWork
+                        .DocumentRepository
+                        .GetWithInclude(p => p.Id.Equals(entity.Id), "User")
+                        .FirstOrDefault();
+
+                    result = entity.ToDto(true);
+                }
             }
 
             return result;
@@ -232,14 +249,18 @@ namespace Documents.Services.Impl
 
         protected override bool OnDelete(Guid id)
         {
-            using (var scope = new TransactionScope())
+            using (var unitOfWork = ObjectContainer.Resolve<UnitOfWork>())
             {
-                _unitOfWork
-                    .DocumentRepository
-                    .Delete(id);
+                using (var scope = new TransactionScope())
+                {
+                    unitOfWork
+                        .DocumentRepository
+                        .Delete(id);
 
-                _unitOfWork.Save();
-                scope.Complete();
+                    unitOfWork
+                        .Save();
+                    scope.Complete();
+                }
             }
 
             return true;

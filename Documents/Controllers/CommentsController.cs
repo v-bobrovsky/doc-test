@@ -10,22 +10,36 @@ using Documents.Filters;
 
 namespace Documents.Controllers
 {
+    /// <summary>
+    /// Provides CRUD functionality for comments.
+    /// </summary>
     [Authorize]
     public class CommentsController : BaseController
     {
+        private readonly IUserContext _userContext;
         private readonly ICommentService _commentService;
 
-        public CommentsController(ICommentService commentService)
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="userContext"></param>
+        /// <param name="commentService"></param>
+        public CommentsController(IUserContext userContext, ICommentService commentService)
         {
+            _userContext = userContext;
             _commentService = commentService;
         }
 
         /// <summary>
+        /// Retrieves list of comments assosiated with document.
         /// GET: api/Comments/?documentId=543D3EC2-BD1F-4AD1-9DAA-D37BE8375893
         /// </summary>
-        /// <param name="documentId"></param>
-        /// <returns></returns>
-        public IHttpActionResult Get(Guid documentId)
+        /// <param name="id">Document identity</param>
+        /// <returns>
+        /// <see cref="IEnumerable&lt;CommentDto&gt;"/>s object containing the list of comments.
+        /// </returns>
+        [HttpGet]
+        public IHttpActionResult Retrive(Guid documentId)
         {
             return PerformAction<IEnumerable<CommentDto>>(() =>
             {
@@ -35,11 +49,15 @@ namespace Documents.Controllers
         }
 
         /// <summary>
+        /// Retrives a specific comment by identity.
         /// GET: api/Comments/5
         /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
-        public IHttpActionResult Get(int id)
+        /// <param name="id">Comment identity</param>
+        /// <returns>
+        /// <see cref="CommentDto"/>s object containing the comment dto entity.
+        /// </returns>
+        [HttpGet]
+        public IHttpActionResult Retrive(int id)
         {
             return PerformAction<CommentDto>(() =>
             {
@@ -49,48 +67,78 @@ namespace Documents.Controllers
         }
 
         /// <summary>
+        /// Creates a new comment.
         /// POST: api/Comments
         /// </summary>
-        /// <param name="data"></param>
-        /// <returns></returns>
-        public IHttpActionResult Post([FromBody]CommentViewModel data)
+        /// <param name="data">Comment data. Name field is mandatory.</param>
+        /// <returns>
+        /// <see cref="CommentDto"/>s object containing the comment dto entity.
+        /// </returns>
+        [HttpPost]
+        public IHttpActionResult Create([FromBody]CommentViewModel data)
         {
             return PerformAction<CommentDto>(() =>
             {
+                CommentDto result = null;
+
                 var comment = data
                     .ToDto();
 
-                return _commentService
-                    .Create(comment);
+                if (comment != null)
+                {
+                    comment.UserId  = _userContext
+                        .GetCurrentId();
+
+                    result = _commentService
+                        .Create(comment);
+                }
+
+                return result;
             });
         }
 
         /// <summary>
+        /// Updates a specific comment by identity.
         /// PUT: api/Comments/5
         /// </summary>
-        /// <param name="id"></param>
-        /// <param name="data"></param>
-        /// <returns></returns>
+        /// <param name="id">Comment identity</param>
+        /// <param name="data">Comment data. Text field is mandatory.</param>
+        /// <returns>
+        /// <see cref="CommentDto"/>s object containing the comment dto entity.
+        /// </returns>
+        [HttpPut]
         [CommentPermissions(ContentOwner = "Own")]
-        public IHttpActionResult Put(int id, [FromBody]CommentViewModel data)
+        public IHttpActionResult Update(int id, [FromBody]CommentViewModel data)
         {
             return PerformAction<CommentDto>(() =>
             {
-                var comment = data
-                    .ToDto();
+                CommentDto result = null;
 
-                comment.Id = id;
+                var commentDto = _commentService
+                    .Get(id);
 
-                return _commentService
-                    .Create(comment);
+                if (commentDto != null)
+                {
+                    commentDto = data
+                        .ToDto(commentDto);
+
+                    result = _commentService
+                        .Update(commentDto);
+                }
+
+                return result;
             });
         }
 
         /// <summary>
+        /// Delete a specific comment by identity.
         /// DELETE: api/Comments/5
         /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
+        /// <param name="id">Comment identity</param>
+        /// <returns>
+        /// True if successfully otherwise False.
+        /// </returns>
+        [HttpDelete]
         [CommentPermissions(ContentOwner = "Own")]
         public IHttpActionResult Delete(int id)
         {

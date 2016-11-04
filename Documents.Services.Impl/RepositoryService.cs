@@ -20,7 +20,6 @@ namespace Documents.Services.Impl
         #region Members
 
         protected readonly ILogger _logger;
-        protected readonly IUnitOfWork _unitOfWork;
         protected readonly IUserContext _userCtx;
 
         #endregion
@@ -60,7 +59,6 @@ namespace Documents.Services.Impl
         public RepositoryService(IUserContext userCtx)
         {
             _logger = ObjectContainer.Resolve<SimpleLogger>();
-            _unitOfWork = ObjectContainer.Resolve<UnitOfWork>();
             _userCtx = userCtx;
         }
 

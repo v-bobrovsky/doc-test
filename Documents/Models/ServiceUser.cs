@@ -5,16 +5,21 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Web;
+using System.Web.Http.Description;
 
 namespace Documents.Models
 {
     /// <summary>
     /// Web api user
     /// </summary>
+    [ApiExplorerSettings(IgnoreApi = true)]
     public class ServiceUser : IUser
     {
         private UserDto _userDto;
 
+        /// <summary>
+        /// User identity
+        /// </summary>
         public string Id
         {
             get 
@@ -25,6 +30,9 @@ namespace Documents.Models
             }
         }
 
+        /// <summary>
+        /// User unique name (login)
+        /// </summary>
         public string UserName
         {
             get
@@ -35,11 +43,19 @@ namespace Documents.Models
             set {;}
         }
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="user"></param>
         public ServiceUser(UserDto user)
         {
             _userDto = user;
         }
 
+        /// <summary>
+        /// Convert to DTO
+        /// </summary>
+        /// <returns></returns>
         public UserDto ToDto()
         {
             return _userDto;

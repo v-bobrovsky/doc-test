@@ -76,22 +76,26 @@ namespace Documents.Services.Impl
 
             if (entity != null)
             {
-                using (var scope = new TransactionScope())
+                using (var unitOfWork = ObjectContainer.Resolve<UnitOfWork>())
                 {
-                    _unitOfWork
+                    using (var scope = new TransactionScope())
+                    {
+                        unitOfWork
+                            .CommentRepository
+                            .Insert(entity);
+
+                        unitOfWork.Save();
+                        scope.Complete();
+                    }
+
+                    entity = unitOfWork
                         .CommentRepository
-                        .Insert(entity);
+                        .GetWithInclude(p => p.Id == entity.Id, "User")
+                        .FirstOrDefault();
 
-                    _unitOfWork.Save();
-                    scope.Complete();
+                    result = entity
+                        .ToDto(true);
                 }
-
-                entity = _unitOfWork
-                    .CommentRepository
-                    .GetWithInclude(p => p.Id == entity.Id, "User")
-                    .FirstOrDefault();
-
-                result = entity.ToDto(true);
             }
 
             return result;
@@ -107,16 +111,19 @@ namespace Documents.Services.Impl
         protected override CommentDto OnGet(int id)
         {
             CommentDto result = null;
-            
-            var comment = _unitOfWork
-                .CommentRepository
-                .GetWithInclude(p => p.Id == id, "User")
-                .FirstOrDefault();
 
-            if (comment != null)
+            using (var unitOfWork = ObjectContainer.Resolve<UnitOfWork>())
             {
-                result = comment
-                    .ToDto(_userCtx.GetCurrentId() == comment.UserId);
+                var comment = unitOfWork
+                    .CommentRepository
+                    .GetWithInclude(p => p.Id == id, "User")
+                    .FirstOrDefault();
+
+                if (comment != null)
+                {
+                    result = comment
+                        .ToDto(_userCtx.GetCurrentId() == comment.UserId);
+                }
             }
 
             return result;
@@ -153,17 +160,21 @@ namespace Documents.Services.Impl
         {
             List<CommentDto> result = null;
 
-            var comments = _unitOfWork
-                .CommentRepository
-                .GetWithInclude(p => p.DocumentId == documentId, "User")
-                .ToList();
-
-            if (comments != null && comments.Any())
+            using (var unitOfWork = ObjectContainer.Resolve<UnitOfWork>())
             {
-                var userId = _userCtx.GetCurrentId();
+                var comments = unitOfWork
+                    .CommentRepository
+                    .GetWithInclude(p => p.DocumentId == documentId, "User")
+                    .ToList();
 
-                result = new List<CommentDto>();
-                comments.ForEach(c => result.Add(c.ToDto(userId == c.UserId)));
+                if (comments != null && comments.Any())
+                {
+                    var userId = _userCtx
+                        .GetCurrentId();
+
+                    result = new List<CommentDto>();
+                    comments.ForEach(c => result.Add(c.ToDto(userId == c.UserId)));
+                }
             }
 
             return result;
@@ -180,32 +191,38 @@ namespace Documents.Services.Impl
         {
             CommentDto result = null;
 
-            var oldEntity = _unitOfWork
-                .CommentRepository
-                .GetByID(entityDto.Id);
-
-            var entity = (oldEntity != null)
-                ? entityDto.ToEntity(oldEntity)
-                : null;
-
-            if (entity != null)
+            using (var unitOfWork = ObjectContainer.Resolve<UnitOfWork>())
             {
-                using (var scope = new TransactionScope())
-                {
-                    _unitOfWork
-                        .CommentRepository
-                        .Update(entity);
-
-                    _unitOfWork.Save();
-                    scope.Complete();
-                }
-
-                entity = _unitOfWork
+                var oldEntity = unitOfWork
                     .CommentRepository
-                    .GetWithInclude(p => p.Id == entity.Id, "User")
-                    .FirstOrDefault();
+                    .GetByID(entityDto.Id);
 
-                result = entity.ToDto(true);
+                var entity = (oldEntity != null)
+                    ? entityDto.ToEntity(oldEntity)
+                    : null;
+
+                if (entity != null)
+                {
+                    using (var scope = new TransactionScope())
+                    {
+                        unitOfWork
+                            .CommentRepository
+                            .Update(entity);
+
+                        unitOfWork
+                            .Save();
+
+                        scope.Complete();
+                    }
+
+                    entity = unitOfWork
+                        .CommentRepository
+                        .GetWithInclude(p => p.Id == entity.Id, "User")
+                        .FirstOrDefault();
+
+                    result = entity
+                        .ToDto(true);
+                }
             }
 
             return result;
@@ -218,14 +235,19 @@ namespace Documents.Services.Impl
         /// Return True if succeeded otherwise False
         protected override bool OnDelete(int id)
         {
-            using (var scope = new TransactionScope())
+            using (var unitOfWork = ObjectContainer.Resolve<UnitOfWork>())
             {
-                _unitOfWork
-                    .CommentRepository
-                    .Delete(id);
+                using (var scope = new TransactionScope())
+                {
+                    unitOfWork
+                        .CommentRepository
+                        .Delete(id);
 
-                _unitOfWork.Save();
-                scope.Complete();
+                    unitOfWork
+                        .Save();
+
+                    scope.Complete();
+                }
             }
 
             return true;

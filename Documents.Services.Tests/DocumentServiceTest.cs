@@ -7,6 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Documents.Data;
 using Documents.Common;
 using Documents.Services.Tests.Core;
+using Documents.DataAccess;
 
 namespace Documents.Services.Tests
 {
@@ -140,50 +141,59 @@ namespace Documents.Services.Tests
         /// <returns></returns>
         protected override bool CheckChildrenExists(Guid parentId)
         {
-            var comments = _unitOfWork
-                     .CommentRepository
-                     .GetManyQueryable(p=> p.DocumentId.Equals(parentId))
-                     .ToList();
+            using (var unitOfWork = ObjectContainer.Resolve<UnitOfWork>())
+            {
+                var comments = unitOfWork
+                         .CommentRepository
+                         .GetManyQueryable(p => p.DocumentId.Equals(parentId))
+                         .ToList();
 
-            return (comments != null && comments.Any());
+                return (comments != null && comments.Any());
+            }
         }
 
         protected override DocumentDto PrepareAndCreateValidEntityWithChildren()
         {
             var document = PrepareValidEntity();
 
-            var entity = document.ToEntity();
+            var entity = document
+                .ToEntity();
 
-            using (var scope = new TransactionScope())
+            using (var unitOfWork = ObjectContainer.Resolve<UnitOfWork>())
             {
-                _unitOfWork
-                     .DocumentRepository
-                     .Insert(entity);
-
-                _unitOfWork.Save();
-                scope.Complete();
-            }
-
-            entity = _unitOfWork
-                .DocumentRepository
-                .GetWithInclude(p => p.Id.Equals(entity.Id), "User")
-                .FirstOrDefault();
-
-            document = entity.ToDto(true);
-
-            var comments = GetComments(document);
-
-            using (var scope = new TransactionScope())
-            {
-                foreach (var comment in comments)
+                using (var scope = new TransactionScope())
                 {
-                    _unitOfWork
-                        .CommentRepository
-                        .Insert(comment.ToEntity());
+                    unitOfWork
+                         .DocumentRepository
+                         .Insert(entity);
+
+                    unitOfWork
+                        .Save();
+                    scope.Complete();
                 }
 
-                _unitOfWork.Save();
-                scope.Complete();
+                entity = unitOfWork
+                    .DocumentRepository
+                    .GetWithInclude(p => p.Id.Equals(entity.Id), "User")
+                    .FirstOrDefault();
+
+                document = entity.ToDto(true);
+
+                var comments = GetComments(document);
+
+                using (var scope = new TransactionScope())
+                {
+                    foreach (var comment in comments)
+                    {
+                        unitOfWork
+                            .CommentRepository
+                            .Insert(comment.ToEntity());
+                    }
+
+                    unitOfWork
+                        .Save();
+                    scope.Complete();
+                }
             }
 
             return document;

@@ -29,8 +29,8 @@
     <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
     <Property Name="CreatedTime" Type="datetime" Nullable="false" />
     <Property Name="ModifiedTime" Type="datetime" Nullable="false" />
-    <Property Name="Subject" Type="nchar" Nullable="true" MaxLength="150" />
-    <Property Name="Content" Type="nchar" Nullable="false" MaxLength="500" />
+    <Property Name="Subject" Type="nvarchar" Nullable="true" MaxLength="150" />
+    <Property Name="Content" Type="nvarchar" Nullable="false" MaxLength="500" />
     <Property Name="DocumentId" Type="uniqueidentifier" Nullable="false" />
     <Property Name="UserId" Type="int" Nullable="false" />
   </EntityType>
@@ -107,8 +107,8 @@
           <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Name="CreatedTime" Type="DateTime" Nullable="false" Precision="3" />
           <Property Name="ModifiedTime" Type="DateTime" Nullable="false" Precision="3" />
-          <Property Name="Subject" Type="String" MaxLength="150" FixedLength="true" Unicode="true" Nullable="true" />
-          <Property Name="Content" Type="String" MaxLength="500" FixedLength="true" Unicode="true" Nullable="false" />
+          <Property Name="Subject" Type="String" MaxLength="150" FixedLength="false" Unicode="true" Nullable="true" />
+          <Property Name="Content" Type="String" MaxLength="500" FixedLength="false" Unicode="true" Nullable="false" />
           <Property Name="DocumentId" Type="Guid" Nullable="false" />
           <Property Name="UserId" Type="Int32" Nullable="false" />
           <NavigationProperty Name="Document" Relationship="Self.FK_DocumentComment" FromRole="Comments" ToRole="Documents" />

@@ -5,8 +5,15 @@ using System.Web.Http;
 
 namespace Documents
 {
+    /// <summary>
+    /// Web api config
+    /// </summary>
     public static class WebApiConfig
     {
+        /// <summary>
+        /// Configure web api
+        /// </summary>
+        /// <param name="config"></param>
         public static void Register(HttpConfiguration config)
         {           
             UnityConfig.RegisterComponents(config);

@@ -7,6 +7,7 @@ using Documents.Data;
 using Documents.Common;
 using System.Transactions;
 using Documents.Services.Tests.Core;
+using Documents.DataAccess;
 
 namespace Documents.Services.Tests
 {
@@ -81,19 +82,30 @@ namespace Documents.Services.Tests
                 Content = _documentContent
             };
 
-            var entity = document.ToEntity();
+            var entity = document
+                .ToEntity();
 
-            using (var scope = new TransactionScope())
+            using (var unitOfWork = ObjectContainer.Resolve<UnitOfWork>())
             {
-                _unitOfWork
-                     .DocumentRepository
-                     .Insert(entity);
+                using (var scope = new TransactionScope())
+                {
+                    unitOfWork
+                         .DocumentRepository
+                         .Insert(entity);
 
-                _unitOfWork.Save();
-                scope.Complete();
+                    unitOfWork
+                        .Save();
+                    scope.Complete();
+                }
+
+                entity = unitOfWork
+                    .DocumentRepository
+                    .GetWithInclude(p => p.Id.Equals(entity.Id), "User")
+                    .FirstOrDefault();
             }
 
-            return entity.ToDto(true);
+            return entity
+                .ToDto(true);
         }
 
         /// <summary>
@@ -184,24 +196,30 @@ namespace Documents.Services.Tests
         {
             var comment = PrepareValidEntity();
 
-            var entity = comment.ToEntity();
+            var entity = comment
+                .ToEntity();
 
-            using (var scope = new TransactionScope())
+            using (var unitOfWork = ObjectContainer.Resolve<UnitOfWork>())
             {
-                _unitOfWork
-                     .CommentRepository
-                     .Insert(entity);
+                using (var scope = new TransactionScope())
+                {
+                    unitOfWork
+                         .CommentRepository
+                         .Insert(entity);
 
-                _unitOfWork.Save();
-                scope.Complete();
+                    unitOfWork
+                        .Save();
+                    scope.Complete();
+                }
+
+                entity = unitOfWork
+                    .CommentRepository
+                    .GetWithInclude(p => p.Id.Equals(entity.Id), "User")
+                    .FirstOrDefault();
             }
 
-            entity = _unitOfWork
-                .CommentRepository
-                .GetWithInclude(p => p.Id.Equals(entity.Id), "User")
-                .FirstOrDefault();
-
-            comment = entity.ToDto(true);
+            comment = entity
+                .ToDto(true);
 
             return comment;
         }

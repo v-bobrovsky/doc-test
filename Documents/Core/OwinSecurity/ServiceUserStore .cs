@@ -57,7 +57,7 @@ namespace Documents.Core
         }
 
         /// <summary>
-        /// Performs async the specified function and returns Task<ServiceUser>
+        /// Performs async the specified function and returns Task
         /// </summary>
         /// <param name="action">action to perform</param>
         /// <returns>Function result</returns>
@@ -83,6 +83,11 @@ namespace Documents.Core
             return task;
         }
 
+        /// <summary>
+        /// Insert a new user
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
         public Task CreateAsync(ServiceUser user)
         {
             return PerformAsyncAction(() => 
@@ -95,11 +100,16 @@ namespace Documents.Core
 
                 if (userDto == null)
                     throw new Exception(String.Format(
-                        "Can't create new user with login: {0}",
+                        "Can't create new user with data: {0}",
                         user.UserName));
             });
         }
 
+        /// <summary>
+        /// Delete a user
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
         public Task DeleteAsync(ServiceUser user)
         {
             return PerformAsyncAction(() =>
@@ -110,11 +120,16 @@ namespace Documents.Core
                 if (!_userService
                     .Delete(userDto.Id))
                     throw new Exception(String.Format(
-                        "Can't delete user with Id: {0}, login: {1}",
+                        "Can't delete user with Id: {0}, data: {1}",
                         user.Id, user.UserName));
             });
         }
 
+        /// <summary>
+        /// Finds a user
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
         public Task<ServiceUser> FindByIdAsync(string userId)
         {
             return PerformAsyncFunction(() =>
@@ -139,6 +154,11 @@ namespace Documents.Core
             });
         }
 
+        /// <summary>
+        /// Find a user by name
+        /// </summary>
+        /// <param name="userName"></param>
+        /// <returns></returns>
         public Task<ServiceUser> FindByNameAsync(string userName)
         {
             return PerformAsyncFunction(() =>
@@ -161,6 +181,11 @@ namespace Documents.Core
 
         }
 
+        /// <summary>
+        /// Update a user
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
         public Task UpdateAsync(ServiceUser user)
         {
             return PerformAsyncAction(() =>
@@ -172,7 +197,7 @@ namespace Documents.Core
 
                 if (userDto == null)
                     throw new Exception(String.Format(
-                        "Can't delete user with Id: {0}, login: {1}",
+                        "Can't delete user with Id: {0}, data: {1}",
                         user.Id, user.UserName));
             });
         }

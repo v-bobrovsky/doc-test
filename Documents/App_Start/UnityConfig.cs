@@ -17,6 +17,11 @@ namespace Documents
     {
         private static readonly IUnityContainer _container = new UnityContainer();
 
+        /// <summary>
+        /// Resolve instance
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         public static T Resolve<T>()
         {
             return _container.Resolve<T>();
@@ -37,6 +42,10 @@ namespace Documents
                 new InjectionConstructor(userCtx));
         }
 
+        /// <summary>
+        /// Register components
+        /// </summary>
+        /// <param name="config"></param>
         public static void RegisterComponents(HttpConfiguration config)
         {
             config.DependencyResolver = new UnityResolver(_container);

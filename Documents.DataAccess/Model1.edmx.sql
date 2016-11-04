@@ -2,7 +2,7 @@
 -- --------------------------------------------------
 -- Entity Designer DDL Script for SQL Server 2005, 2008, 2012 and Azure
 -- --------------------------------------------------
--- Date Created: 11/03/2016 11:34:04
+-- Date Created: 11/04/2016 06:09:28
 -- Generated from EDMX file: D:\Ciklum\doc-test\Documents\Documents.DataAccess\Model1.edmx
 -- --------------------------------------------------
 
@@ -50,8 +50,8 @@ CREATE TABLE [dbo].[Comments] (
     [Id] int IDENTITY(1,1) NOT NULL,
     [CreatedTime] datetime  NOT NULL,
     [ModifiedTime] datetime  NOT NULL,
-    [Subject] nchar(150)  NULL,
-    [Content] nchar(500)  NOT NULL,
+    [Subject] nvarchar(150)  NULL,
+    [Content] nvarchar(500)  NOT NULL,
     [DocumentId] uniqueidentifier  NOT NULL,
     [UserId] int  NOT NULL
 );

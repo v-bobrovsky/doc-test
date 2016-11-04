@@ -6,6 +6,9 @@ using System.Web;
 
 namespace Documents.Models
 {
+    /// <summary>
+    /// Represents document data
+    /// </summary>
     public class DocumentViewModel
     {
         /// <summary>

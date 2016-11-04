@@ -33,7 +33,9 @@ namespace Documents.Services
         /// Retrieves list of specific DTO's entities.
         /// </summary>
         /// <param name="args"></param>
-        /// <returns></returns>
+        /// <returns>
+        /// <see cref="IEnumerable<TEntityDto>"/>s object containing the list of entitities.
+        /// </returns>
         IEnumerable<TEntityDto> GetAll(params object[] args);
  
         /// <summary>

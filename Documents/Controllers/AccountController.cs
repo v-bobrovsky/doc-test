@@ -6,22 +6,25 @@ using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 
+using System.Security.Claims;
 using Microsoft.Owin.Security;
 using Microsoft.AspNet.Identity;
 using Microsoft.Owin.Security.OAuth;
-using Microsoft.Owin.Security.Cookies;
-using Microsoft.AspNet.Identity.Owin;
-
-using System.Security.Claims;
 using System.Security.Authentication;
+using Microsoft.AspNet.Identity.Owin;
+using Microsoft.Owin.Security.Cookies;
 
 using Documents.Core;
 using Documents.Models;
 using Documents.Services;
 using Documents.Data;
+using System.Web.Http.Description;
 
 namespace Documents.Controllers
 {
+    /// <summary>
+    /// Provides main functionality for users: register, login, logout.
+    /// </summary>
     [Authorize]
     [RoutePrefix("api/Account")]
     public class AccountController : BaseController
@@ -29,6 +32,7 @@ namespace Documents.Controllers
         private readonly IUserContext _userContext;
         private ServiceUserManager _serviceUserManager;
 
+        [ApiExplorerSettings(IgnoreApi = true)]
         public ServiceUserManager ServiceUserManager
         {
             get
@@ -51,78 +55,77 @@ namespace Documents.Controllers
             }
         }
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="userContext"></param>
         public AccountController(IUserContext userContext)
         {
             _userContext = userContext;
         }
-
+       
         /// <summary>
+        /// Register new user with manager role
         /// POST: api/Account/Register/Manager
         /// </summary>
-        /// <param name="register"></param>
-        /// <returns></returns>
-        [HttpGet]
-        [AllowAnonymous]
-        [Route("Register/Employee")]
-        public IHttpActionResult Register()
-        {
-            return RegisterEmployee(new RegisterViewModel()
-                {
-                    Login = "asa@asa.xxx",
-                    Password = "z1213232!",
-                    UserName = "23232"
-                });
-        }
-
-        /// <summary>
-        /// POST: api/Account/Register/Manager
-        /// </summary>
-        /// <param name="register"></param>
-        /// <returns></returns>
+        /// <param name="data">Register data</param>
+        /// <returns>
+        /// <see cref="IdentityResult"/>s object containing the result of registration.
+        /// </returns>
         [HttpPost]
         [AllowAnonymous]
         [Route("Register/Manager")]
-        public IHttpActionResult RegisterManager([FromBody]RegisterViewModel register)
+        public IHttpActionResult RegisterManager([FromBody]RegisterViewModel data)
         {
             return PerformAction<IdentityResult>(() =>
             {
-                return RegisterUser(register, true);
+                return RegisterUser(data, true);
             });
         }
 
         /// <summary>
+        /// Register new user with manager employee
         /// POST: api/Account/Register/Employee
         /// </summary>
-        /// <param name="register"></param>
-        /// <returns></returns>
+        /// <param name="data">Register data</param>
+        /// <returns>
+        /// <see cref="IdentityResult"/>s object containing the result of registration.
+        /// </returns>
         [HttpPost]
         [AllowAnonymous]
         [Route("Register/Employee")]
-        public IHttpActionResult RegisterEmployee([FromBody]RegisterViewModel register)
+        public IHttpActionResult RegisterEmployee([FromBody]RegisterViewModel data)
         {
             return PerformAction<IdentityResult>(() =>
             {
-                return RegisterUser(register, false);
+                return RegisterUser(data, false);
             });
         }
 
         /// <summary>
         /// POST: api/Account/Login
         /// </summary>
-        /// <param name="login"></param>
-        /// <returns></returns>
+        /// <param name="data">Login data</param>
+        /// <returns>
+        /// <see cref="IdentityResult"/>s object containing the result of registration.
+        /// </returns>
         [HttpPost]
         [Route("Login")]
         [AllowAnonymous]
-        public IHttpActionResult LoginUser([FromBody]LoginViewModel login)
+        public IHttpActionResult Login([FromBody]LoginViewModel data)
         {
             return PerformAction<IdentityResult>(() =>
             {
                 ServiceUser user = null;
 
-                ServiceUserManager
-                    .FindAsync(login.Login, login.Password)
-                    .ContinueWith((t) => user = t.Result);
+                var findUserTask = ServiceUserManager
+                    .FindAsync(data.Login, data.Password);
+
+                findUserTask
+                    .Wait();
+
+                user = findUserTask
+                    .Result;
 
                 Authentication
                     .SignOut();
@@ -130,7 +133,7 @@ namespace Documents.Controllers
                 if (user == null)
                     throw new AuthenticationException("Invalid username or password!");
 
-                LogInUserSync(user);
+                LoginUser(user);
 
                 return IdentityResult
                     .Success;
@@ -140,15 +143,17 @@ namespace Documents.Controllers
         /// <summary>
         /// Register user
         /// </summary>
-        /// <param name="register"></param>
-        /// <param name="hasManager"></param>
-        /// <returns></returns>
-        public IdentityResult RegisterUser(RegisterViewModel register, bool hasManager)
+        /// <param name="data">Login data</param>
+        /// <param name="hasManager">Has user manager</param>
+        /// <returns>
+        /// <see cref="IdentityResult"/>s object containing the result of registration.
+        /// </returns>
+        private IdentityResult RegisterUser(RegisterViewModel data, bool hasManager)
         {
             IdentityResult result = IdentityResult
                 .Failed();
 
-            var userDto = register
+            var userDto = data
                 .ToDto();
 
             userDto.UserRole = hasManager 
@@ -174,7 +179,8 @@ namespace Documents.Controllers
             createUserTask
                 .Wait();
 
-            result = createUserTask.Result;
+            result = createUserTask
+                .Result;
 
             if (result == IdentityResult.Success)
             {
@@ -187,18 +193,17 @@ namespace Documents.Controllers
                 user = findUserTask
                     .Result;
 
-                LogInUserSync(user);
+                LoginUser(user);
             }
 
             return result;
         }
 
-
         /// <summary>
-        /// Login user sync
+        /// Login user
         /// </summary>
         /// <param name="user">Service user</param>
-        private void LogInUserSync(ServiceUser user)
+        private void LoginUser(ServiceUser user)
         {
             if (user != null)
             {
@@ -224,7 +229,7 @@ namespace Documents.Controllers
         /// POST api/Account/Logout
         /// </summary>
         /// <returns></returns>
-        [HttpGet]
+        [HttpPost]
         [Route("Logout")]
         public IHttpActionResult Logout()
         {

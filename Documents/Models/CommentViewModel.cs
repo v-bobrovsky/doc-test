@@ -6,6 +6,9 @@ using System.Web;
 
 namespace Documents.Models
 {
+    /// <summary>
+    /// Represents comment data
+    /// </summary>
     public class CommentViewModel
     {
         /// <summary>

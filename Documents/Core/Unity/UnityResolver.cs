@@ -10,10 +10,17 @@ using System.Web.Http.Filters;
 
 namespace Documents.Core
 {
+    /// <summary>
+    /// Unity resolver
+    /// </summary>
     public class UnityResolver : IDependencyResolver
     {
         protected IUnityContainer container;
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="container"></param>
         public UnityResolver(IUnityContainer container)
         {
             if (container == null)

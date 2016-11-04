@@ -48,8 +48,8 @@ namespace Documents.Data
         protected bool Equals(BaseEntityDto<TIdentity> other)
         {
             return Id.Equals(other.Id)
-                && CreatedTime == other.CreatedTime
-                && ModifiedTime == other.ModifiedTime
+                && CreatedTime.ToString() == other.CreatedTime.ToString()
+                && ModifiedTime.ToString() == other.ModifiedTime.ToString()
                 && CanModify == other.CanModify;
         }
     }

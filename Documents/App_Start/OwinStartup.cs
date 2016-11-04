@@ -12,13 +12,24 @@ using Documents.Core;
 [assembly: OwinStartupAttribute(typeof(Documents.OwinStartup))]
 namespace Documents
 {
+    /// <summary>
+    /// Owin configuration
+    /// </summary>
     public class OwinStartup
     {
+        /// <summary>
+        /// Configuration
+        /// </summary>
+        /// <param name="app"></param>
         public void Configuration(IAppBuilder app)
         {
             ConfigureAuth(app);
         }
 
+        /// <summary>
+        /// Configuration auth
+        /// </summary>
+        /// <param name="app"></param>
         public void ConfigureAuth(IAppBuilder app)
         {
             app.CreatePerOwinContext<ServiceUserManager>(ServiceUserManager.Create);
