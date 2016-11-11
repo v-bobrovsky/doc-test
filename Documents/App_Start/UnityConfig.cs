@@ -30,16 +30,13 @@ namespace Documents
         static UnityConfig()
         {
             _container.RegisterType<ILogger, SimpleLogger>(new HierarchicalLifetimeManager());
-            _container.RegisterType<IUserContext, UserContext>();
-
-            IUserContext userCtx = _container.Resolve<IUserContext>();
 
             _container.RegisterType<IDocumentService, DocumentService>(new HierarchicalLifetimeManager(),
-                new InjectionConstructor(userCtx));
+                new InjectionConstructor());
             _container.RegisterType<ICommentService, CommentService>(new HierarchicalLifetimeManager(),
-                new InjectionConstructor(userCtx));
+                new InjectionConstructor());
             _container.RegisterType<IUserService, UserService>(new HierarchicalLifetimeManager(),
-                new InjectionConstructor(userCtx));
+                new InjectionConstructor());
         }
 
         /// <summary>

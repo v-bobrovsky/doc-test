@@ -25,9 +25,9 @@ namespace Documents.Services.Tests.Core
         #endregion
 
         #region Members
-
+       
         protected readonly ILogger _logger;
-        protected readonly IUserContext _userCtx;
+        protected readonly TestUserContext _userCtx = new TestUserContext();
 
         protected IRepositoryService<TEntityDto, TIdentity> _testService;       
 
@@ -105,7 +105,6 @@ namespace Documents.Services.Tests.Core
                 DatabaseHelper.Cleanup(_userLogin);
 
             _logger = ObjectContainer.Resolve<SimpleLogger>();
-            _userCtx = ObjectContainer.Resolve<TestUserContext>();
             _testService = null;
         }
       
@@ -116,7 +115,7 @@ namespace Documents.Services.Tests.Core
         private UserDto CreateTestUser()
         {
             var result = _userCtx
-                .GetCurrentUser();
+                .GetUser();
 
             if (result == null)
             {
@@ -187,6 +186,9 @@ namespace Documents.Services.Tests.Core
         {
             var newData = PrepareValidEntity();
 
+            var permissions = _userCtx
+                .GetPermissionsCtx();
+
             Assert.IsNotNull(newData);
 
             var insertedData = _testService.Create(newData);
@@ -195,7 +197,7 @@ namespace Documents.Services.Tests.Core
 
             var insertId = GetIdentity(insertedData);
 
-            var loadedData = _testService.Get(insertId);
+            var loadedData = _testService.Get(permissions, insertId);
 
             Assert.IsNotNull(loadedData);
             Assert.AreEqual(insertedData, loadedData);
@@ -242,14 +244,17 @@ namespace Documents.Services.Tests.Core
 
             IEnumerable<TEntityDto> loadedData;
 
+            var permissions = _userCtx
+                .GetPermissionsCtx();
+
             foreach (var key in keys)
             {
                 loadedData = null;
 
                 if (key == null)
-                    loadedData = _testService.GetAll();
-                else 
-                    loadedData = _testService.GetAll(key);
+                    loadedData = _testService.GetAll(permissions);
+                else
+                    loadedData = _testService.GetAll(permissions, key);
                 
                 Assert.IsNotNull(loadedData);
 
@@ -266,13 +271,16 @@ namespace Documents.Services.Tests.Core
         {
             var savedData = PrepareAndCreateValidEntityWithChildren();
 
+            var permissions = _userCtx
+                .GetPermissionsCtx();
+
             Assert.IsNotNull(savedData);
 
             var savedDataId = GetIdentity(savedData);
 
             Assert.IsTrue(_testService.Delete(savedDataId));
 
-            var loadedData = _testService.Get(savedDataId);
+            var loadedData = _testService.Get(permissions, savedDataId);
 
             Assert.IsNull(loadedData);
             Assert.IsFalse(CheckChildrenExists(savedDataId), 

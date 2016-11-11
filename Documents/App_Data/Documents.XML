@@ -543,7 +543,7 @@
             Provides main functionality for users: register, login, logout.
             </summary>
         </member>
-        <member name="M:Documents.Controllers.AccountController.#ctor(Documents.Services.IUserContext)">
+        <member name="M:Documents.Controllers.AccountController.#ctor">
             <summary>
             Constructor
             </summary>
@@ -605,11 +605,10 @@
             Provides base functionality for logged user information.
             </summary>
         </member>
-        <member name="M:Documents.Controllers.UserInfoController.#ctor(Documents.Services.IUserContext,Documents.Services.IUserService)">
+        <member name="M:Documents.Controllers.UserInfoController.#ctor(Documents.Services.IUserService)">
             <summary>
             Constructor
             </summary>
-            <param name="userContext"></param>
             <param name="userService"></param>
         </member>
         <member name="M:Documents.Controllers.UserInfoController.Retrive">
@@ -646,11 +645,10 @@
             Provides CRUD functionality for comments.
             </summary>
         </member>
-        <member name="M:Documents.Controllers.CommentsController.#ctor(Documents.Services.IUserContext,Documents.Services.ICommentService)">
+        <member name="M:Documents.Controllers.CommentsController.#ctor(Documents.Services.ICommentService)">
             <summary>
             Constructor
             </summary>
-            <param name="userContext"></param>
             <param name="commentService"></param>
         </member>
         <member name="M:Documents.Controllers.CommentsController.Retrive(System.Guid)">
@@ -1017,6 +1015,18 @@
             <param name="action">action to perform</param>
             <returns>Action result</returns>
         </member>
+        <member name="M:Documents.Core.BaseController.GetCurrentUserId">
+            <summary>
+            Get logged current user unique identity
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Documents.Core.BaseController.GetPermissionsContext">
+            <summary>
+            Get permissions context for logged current user
+            </summary>
+            <returns></returns>
+        </member>
         <member name="T:Documents.Core.ServiceUserPasswordHasher">
             <summary>
             Override password hashing to save password as clean text
@@ -1035,34 +1045,6 @@
             </summary>
             <param name="hashedPassword"></param>
             <param name="providedPassword"></param>
-            <returns></returns>
-        </member>
-        <member name="T:Documents.Core.UserContext">
-            <summary>
-            User context
-            </summary>
-        </member>
-        <member name="M:Documents.Core.UserContext.GetCurrentId">
-            <summary>
-            Get current user id
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:Documents.Core.UserContext.SetUser(Documents.Data.UserDto)">
-            <summary>
-            Set current user
-            </summary>
-            <param name="user"></param>
-        </member>
-        <member name="M:Documents.Core.UserContext.ClearUser">
-            <summary>
-            Remove current user
-            </summary>
-        </member>
-        <member name="M:Documents.Core.UserContext.GetCurrentUser">
-            <summary>
-            Get current user
-            </summary>
             <returns></returns>
         </member>
         <member name="T:Documents.Core.BaseContentPermissions">
@@ -1093,6 +1075,29 @@
             <param name="actionContext"></param>
             <returns></returns>
         </member>
+        <member name="M:Documents.Core.BaseContentPermissions.IsUserAuthenticated(System.Web.Http.Controllers.HttpActionContext)">
+            <summary>
+            Check is user was authenticated
+            </summary>
+            <param name="actionContext"></param>
+            <returns>
+            True if authenticated otherwise False
+            </returns>
+        </member>
+        <member name="M:Documents.Core.BaseContentPermissions.GetUserId(System.Web.Http.Controllers.HttpActionContext)">
+            <summary>
+            Get user unique identity
+            </summary>
+            <param name="actionContext"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Documents.Core.BaseContentPermissions.GetUserRole(System.Web.Http.Controllers.HttpActionContext)">
+            <summary>
+            Get user role
+            </summary>
+            <param name="actionContext"></param>
+            <returns></returns>
+        </member>
         <member name="M:Documents.Core.BaseContentPermissions.IsAuthorized(System.Web.Http.Controllers.HttpActionContext)">
             <summary>
             Indicates whether the specified control is authorized.
@@ -1108,20 +1113,6 @@
             <returns>
             True if successfullly otherwise False
             </returns>
-        </member>
-        <member name="M:Documents.Core.BaseContentPermissions.IsCurrentUserAuthenticated">
-            <summary>
-            Check is authenticated current user
-            </summary>
-            <returns>
-            True if authenticated otherwise False
-            </returns>
-        </member>
-        <member name="M:Documents.Core.BaseContentPermissions.GetCurrentUserRole">
-            <summary>
-            Get current user role
-            </summary>
-            <returns></returns>
         </member>
         <member name="M:Documents.Core.BaseContentPermissions.IsInRole(System.Web.Http.Controllers.HttpActionContext)">
             <summary>

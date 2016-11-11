@@ -16,12 +16,10 @@ namespace Documents.Controllers
     [Authorize]
     public class DocumentsController : BaseController
     {
-        private readonly IUserContext _userContext;
         private readonly IDocumentService _documentService;
 
-        public DocumentsController(IUserContext userContext, IDocumentService documentService)
+        public DocumentsController(IDocumentService documentService)
         {
-            _userContext = userContext;
             _documentService = documentService;
         }
 
@@ -37,8 +35,10 @@ namespace Documents.Controllers
         {
             return PerformAction<IEnumerable<DocumentDto>>(() =>
             {
+                var ctx = GetPermissionsContext();
+
                 return _documentService
-                    .GetAll();
+                    .GetAll(ctx);
             });
         }
 
@@ -55,8 +55,10 @@ namespace Documents.Controllers
         {
             return PerformAction<DocumentDto>(() =>
             {
+                var ctx = GetPermissionsContext();
+
                 return _documentService
-                    .Get(id);
+                    .Get(ctx, id);
             });
         }
 
@@ -81,8 +83,7 @@ namespace Documents.Controllers
 
                 if (document != null)
                 {
-                    document.UserId = _userContext
-                        .GetCurrentId();
+                    document.UserId = GetCurrentUserId();
 
                     result = _documentService
                         .Create(document);
@@ -109,8 +110,10 @@ namespace Documents.Controllers
             {
                 DocumentDto result = null;
 
+                var ctx = GetPermissionsContext();
+
                 var documentDto = _documentService
-                    .Get(id);
+                    .Get(ctx, id);
 
                 if (documentDto != null)
                 {

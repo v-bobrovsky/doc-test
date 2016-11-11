@@ -8,6 +8,8 @@ using Microsoft.AspNet.Identity;
 using Microsoft.Owin.Security.OAuth;
 using Microsoft.Owin.Security.Cookies;
 using Microsoft.AspNet.Identity.Owin;
+using Owin;
+using Microsoft.Owin;
 
 namespace Documents.Core
 {
@@ -45,6 +47,87 @@ namespace Documents.Core
         /// <returns></returns>
         protected abstract bool CheckIsOwnContent(HttpActionContext actionContext);
 
+        #region Helper statical methods
+
+        /// <summary>
+        /// Check is user was authenticated
+        /// </summary>
+        /// <param name="actionContext"></param>
+        /// <returns>
+        /// True if authenticated otherwise False
+        /// </returns>
+        protected static bool IsUserAuthenticated(HttpActionContext actionContext)
+        {
+            var result = false;
+
+            if (actionContext != null &&
+                actionContext.RequestContext != null &&
+                actionContext.RequestContext.Principal != null &&
+                actionContext.RequestContext.Principal.Identity != null)
+            {
+                result = actionContext
+                    .RequestContext
+                    .Principal
+                    .Identity
+                    .IsAuthenticated;
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Get user unique identity
+        /// </summary>
+        /// <param name="actionContext"></param>
+        /// <returns></returns>
+        protected static int GetUserId(HttpActionContext actionContext)
+        {
+            var result = 0;
+
+            if (actionContext != null &&
+                actionContext.RequestContext != null &&
+                actionContext.RequestContext.Principal != null &&
+                actionContext.RequestContext.Principal.Identity != null)
+            {
+                var userId = actionContext
+                    .RequestContext
+                    .Principal
+                    .Identity
+                    .GetUserId();
+
+                if (!Int32.TryParse(userId, out result))
+                    result = 0;
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Get user role
+        /// </summary>
+        /// <param name="actionContext"></param>
+        /// <returns></returns>
+        protected static string GetUserRole(HttpActionContext actionContext)
+        {
+            var result = string.Empty;
+
+            if (actionContext != null &&
+                actionContext.RequestContext != null &&
+                actionContext.RequestContext.Principal != null &&
+                actionContext.RequestContext.Principal.Identity != null)
+            {
+                result = actionContext
+                    .RequestContext
+                    .Principal
+                    .Identity
+                    .GetUserRole();
+            }
+
+            return result;
+        }
+
+        #endregion
+
         /// <summary>
         /// Indicates whether the specified control is authorized.
         /// </summary>
@@ -66,7 +149,7 @@ namespace Documents.Core
                     allowedRoles = new string[0];
 
 
-                result = IsCurrentUserAuthenticated() && 
+                result = IsUserAuthenticated(actionContext) && 
                     IsInRole(actionContext) && 
                     IsContentAccess(actionContext);
             }
@@ -92,52 +175,6 @@ namespace Documents.Core
         }
 
         /// <summary>
-        /// Check is authenticated current user
-        /// </summary>
-        /// <returns>
-        /// True if authenticated otherwise False
-        /// </returns>
-        private bool IsCurrentUserAuthenticated()
-        {
-            var result = false;
-
-            if (HttpContext.Current != null &&
-                HttpContext.Current.User != null &&
-                HttpContext.Current.User.Identity != null)
-            {
-                result = HttpContext
-                    .Current
-                    .User
-                    .Identity
-                    .IsAuthenticated;
-            }
-
-            return result;
-        }
-
-        /// <summary>
-        /// Get current user role
-        /// </summary>
-        /// <returns></returns>
-        private string GetCurrentUserRole()
-        {
-            var result = string.Empty;
-
-            if (HttpContext.Current != null &&
-                HttpContext.Current.User != null &&
-                HttpContext.Current.User.Identity != null)
-            {
-                result = HttpContext
-                    .Current
-                    .User
-                    .Identity
-                    .GetUserRole();
-            }
-
-            return result;
-        }
-
-        /// <summary>
         /// Check is user have a specific role
         /// </summary>
         /// <param name="actionContext"></param>
@@ -152,7 +189,7 @@ namespace Documents.Core
             {
                 result = false;
 
-                var currentUserRole = GetCurrentUserRole();
+                var currentUserRole = GetUserRole(actionContext);
 
                 if (!String.IsNullOrEmpty(currentUserRole))
                 {

@@ -42,6 +42,7 @@
   <ItemGroup>
     <Compile Include="DocumentDto.cs" />
     <Compile Include="BaseEntityDto.cs" />
+    <Compile Include="PermissionsContext.cs" />
     <Compile Include="UserDto.cs" />
     <Compile Include="CommentDto.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

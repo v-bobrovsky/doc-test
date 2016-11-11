@@ -20,7 +20,6 @@ namespace Documents.Services.Impl
         #region Members
 
         protected readonly ILogger _logger;
-        protected readonly IUserContext _userCtx;
 
         #endregion
 
@@ -46,8 +45,8 @@ namespace Documents.Services.Impl
         #region Abstract methods
 
         protected abstract TEntityDto OnCreate(TEntityDto entityDto);
-        protected abstract TEntityDto OnGet(TIdentity id);
-        protected abstract IEnumerable<TEntityDto> OnGetAll(params object[] args);
+        protected abstract TEntityDto OnGet(PermissionsContext ctx, TIdentity id);
+        protected abstract IEnumerable<TEntityDto> OnGetAll(PermissionsContext ctx, params object[] args);
         protected abstract TEntityDto OnUpdate(TEntityDto entityDto);
         protected abstract bool OnDelete(TIdentity id);
 
@@ -56,10 +55,9 @@ namespace Documents.Services.Impl
         /// <summary>
         /// Constructor
         /// </summary>
-        public RepositoryService(IUserContext userCtx)
+        public RepositoryService()
         {
             _logger = ObjectContainer.Resolve<SimpleLogger>();
-            _userCtx = userCtx;
         }
 
         /// <summary>
@@ -112,11 +110,12 @@ namespace Documents.Services.Impl
         /// <summary>
         ///  Retrieves a specific entity
         /// </summary>
+        /// <param name="ctx">Contains information of current user</param>
         /// <param name="id">Entity unique identifier</param>
         /// <returns>
         /// <see cref="TEntityDto"/>s object containing the entity.
         /// </returns>
-        public TEntityDto Get(TIdentity id)
+        public TEntityDto Get(PermissionsContext ctx, TIdentity id)
         {
             TEntityDto result = null;
 
@@ -124,7 +123,7 @@ namespace Documents.Services.Impl
             {
                 if (ValidateEntityKey(id))
                 {
-                    result = OnGet(id);
+                    result = OnGet(ctx, id);
                 }
                 else
                 {
@@ -140,15 +139,16 @@ namespace Documents.Services.Impl
         /// <summary>
         /// Retrieves list of specific DTO's entities.
         /// </summary>
+        /// <param name="ctx">Contains information of current user</param>
         /// <param name="args"></param>
         /// <returns></returns>
-        public IEnumerable<TEntityDto> GetAll(params object[] args)
+        public IEnumerable<TEntityDto> GetAll(PermissionsContext ctx, params object[] args)
         {
             IEnumerable<TEntityDto> result = null;
 
             PerformAction(() =>
             {
-                result = OnGetAll(args);
+                result = OnGetAll(ctx, args);
             });
 
             return result;

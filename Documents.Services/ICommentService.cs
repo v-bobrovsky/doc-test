@@ -13,8 +13,9 @@ namespace Documents.Services
         /// <summary>
         /// Check is comment owner
         /// </summary>
+        /// <param name="ctx">Contains information of current user</param>
         /// <param name="id">Commentary unique identifier</param>
         /// <returns></returns>
-        bool CheckIsCommentOwner(int id);
+        bool CheckIsCommentOwner(PermissionsContext ctx, int id);
     }
 }

@@ -6,6 +6,7 @@ using Microsoft.AspNet.Identity;
 using Documents.Models;
 using Documents.Services;
 using Documents.Utils;
+using Documents.Data;
 
 namespace Documents.Core
 {
@@ -144,7 +145,7 @@ namespace Documents.Core
                         id = 0;
 
                     var userDto = _userService
-                        .Get(id);
+                        .Get(new PermissionsContext(id), id);
 
                     if (userDto != null)
                         user = new ServiceUser(userDto);
@@ -168,7 +169,7 @@ namespace Documents.Core
                 if (!String.IsNullOrEmpty(userName))
                 {
                     var usersDto = _userService
-                        .GetAll(userName);
+                        .GetAll(new PermissionsContext(0), userName);
 
                     if (usersDto != null && usersDto.Any())
                         user = new ServiceUser(

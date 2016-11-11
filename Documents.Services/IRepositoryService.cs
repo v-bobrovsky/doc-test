@@ -23,20 +23,22 @@ namespace Documents.Services
         /// <summary>
         ///  Retrieves a specific entity
         /// </summary>
+        /// <param name="ctx">Contains information of current user</param>
         /// <param name="id">Entity unique identifier</param>
         /// <returns>
         /// <see cref="TEntityDto"/>s object containing the entity.
         /// </returns>
-        TEntityDto Get(TIdentity id);
+        TEntityDto Get(PermissionsContext ctx, TIdentity id);
 
         /// <summary>
         /// Retrieves list of specific DTO's entities.
         /// </summary>
+        /// <param name="ctx">Contains information of current user</param>
         /// <param name="args"></param>
         /// <returns>
         /// <see cref="IEnumerable<TEntityDto>"/>s object containing the list of entitities.
         /// </returns>
-        IEnumerable<TEntityDto> GetAll(params object[] args);
+        IEnumerable<TEntityDto> GetAll(PermissionsContext ctx, params object[] args);
  
         /// <summary>
         /// Updates a specific DTO

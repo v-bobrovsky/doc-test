@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Documents.Services.Tests.Core
 {
-    public class TestUserContext: IUserContext
+    public class TestUserContext
     {
         private static UserDto _user;
 
@@ -24,14 +24,21 @@ namespace Documents.Services.Tests.Core
             _user = user;
         }
 
-        public int GetCurrentId()
+        public int GetUserId()
         {
-            return _user != null ? _user.Id : 0;
+            return _user != null 
+                ? _user.Id : 0;
         }
 
-        public UserDto GetCurrentUser()
+        public UserDto GetUser()
         {
             return _user;
+        }
+
+        public PermissionsContext GetPermissionsCtx()
+        {
+             var userId = GetUserId();
+             return new PermissionsContext(userId);
         }
     }
 }

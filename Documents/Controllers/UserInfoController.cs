@@ -28,27 +28,14 @@ namespace Documents.Controllers
     [Authorize]
     public class UserInfoController : BaseController
     {
-        private readonly IUserContext _userContext;
         private readonly IUserService _userService;
-
-        private IAuthenticationManager Authentication
-        {
-            get
-            {
-                return Request
-                    .GetOwinContext()
-                    .Authentication;
-            }
-        }
 
         /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="userContext"></param>
         /// <param name="userService"></param>
-        public UserInfoController(IUserContext userContext, IUserService userService)
+        public UserInfoController(IUserService userService)
         {
-            _userContext = userContext;
             _userService = userService;
         }
 
@@ -64,11 +51,10 @@ namespace Documents.Controllers
         {
             return PerformAction<UserDto>(() =>
             {
-                var userId = _userContext
-                    .GetCurrentId();
+                var ctx = GetPermissionsContext();
 
                 var userDto = _userService
-                    .Get(userId);
+                    .Get(ctx, ctx.CurrentUserId);
 
                 if (userDto != null)
                 {
@@ -96,11 +82,10 @@ namespace Documents.Controllers
             {
                 UserDto result = null;
 
-                var userId = _userContext
-                    .GetCurrentId();
+                var ctx = GetPermissionsContext();
 
                 var userDto = _userService
-                    .Get(userId);
+                    .Get(ctx, ctx.CurrentUserId);
 
                 if (userDto != null)
                 {
@@ -127,18 +112,13 @@ namespace Documents.Controllers
         {
             return PerformAction<bool>(() =>
             {
-                var userId = _userContext
-                    .GetCurrentId();
+                var userId = GetCurrentUserId();
 
                 var result = _userService
                     .Delete(userId);
 
                 if (result)
                 {
-                    if (_userContext != null)
-                        ((UserContext)_userContext)
-                            .ClearUser();
-
                     Authentication.SignOut(
                         CookieAuthenticationDefaults
                         .AuthenticationType);

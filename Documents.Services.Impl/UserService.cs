@@ -18,8 +18,8 @@ namespace Documents.Services.Impl
         /// <summary>
         /// Constructor
         /// </summary>
-        public UserService(IUserContext userCtx)
-            : base(userCtx)
+        public UserService()
+            : base()
         {
         }
 
@@ -102,11 +102,12 @@ namespace Documents.Services.Impl
         /// <summary>
         /// Retrieves a specific user
         /// </summary>
+        /// <param name="ctx">Contains information of current user</param>
         /// <param name="userId">User identifier</param>
         /// <returns>
         /// <see cref="UserDto"/>s object containing the new comment.
         /// </returns>
-        protected override UserDto OnGet(int id)
+        protected override UserDto OnGet(PermissionsContext ctx, int id)
         {
             UserDto result = null;
 
@@ -127,11 +128,12 @@ namespace Documents.Services.Impl
         /// <summary>
         /// Retrieves all users
         /// </summary>
+        /// <param name="ctx">Contains information of current user</param>
         /// <param name="userId">User identifier</param>
         /// <returns>
         /// List of <see cref="UserDto"/>s object containing the results.
         /// </returns>
-        protected override IEnumerable<UserDto> OnGetAll(params object[] args)
+        protected override IEnumerable<UserDto> OnGetAll(PermissionsContext ctx, params object[] args)
         {
             var isGetUsersByUserLogin = (args != null
                 && args.Length == 1 

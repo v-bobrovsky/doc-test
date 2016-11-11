@@ -13,8 +13,9 @@ namespace Documents.Services
         /// <summary>
         /// Check is document owner
         /// </summary>
+        /// <param name="ctx">Contains information of current user</param>
         /// <param name="id">Document unique identifier</param>
         /// <returns></returns>
-        bool CheckIsDocumentOwner(Guid id);
+        bool CheckIsDocumentOwner(PermissionsContext ctx, Guid id);
     }
 }

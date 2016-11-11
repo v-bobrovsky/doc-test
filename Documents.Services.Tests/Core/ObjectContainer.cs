@@ -34,16 +34,13 @@ namespace Documents.Services.Tests.Core
         {
             _container.RegisterType<ILogger, SimpleLogger>();
             _container.RegisterType<IUnitOfWork, UnitOfWork>();
-            _container.RegisterType<IUserContext, TestUserContext>();
-
-            IUserContext userCtx = _container.Resolve<IUserContext>();
 
             _container.RegisterType<IDocumentService, DocumentService>(new HierarchicalLifetimeManager(),
-                new InjectionConstructor(userCtx));
+                new InjectionConstructor());
             _container.RegisterType<ICommentService, CommentService>(new HierarchicalLifetimeManager(),
-                new InjectionConstructor(userCtx));
+                new InjectionConstructor());
             _container.RegisterType<IUserService, UserService>(new HierarchicalLifetimeManager(),
-                new InjectionConstructor(userCtx));
+                new InjectionConstructor());
         }
     }
 }

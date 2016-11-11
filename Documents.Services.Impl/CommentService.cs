@@ -18,8 +18,8 @@ namespace Documents.Services.Impl
         /// <summary>
         /// Constructor
         /// </summary>
-        public CommentService(IUserContext userCtx)
-            : base(userCtx)
+        public CommentService()
+            : base()
         {
         }
 
@@ -104,11 +104,12 @@ namespace Documents.Services.Impl
         /// <summary>
         /// Retrieves a specific comment
         /// </summary>
+        /// <param name="ctx">Contains information of current user</param>
         /// <param name="id">Commentary unique identifier</param>
         /// <returns>
         /// <see cref="CommentDto"/>s object containing the new comment.
         /// </returns>
-        protected override CommentDto OnGet(int id)
+        protected override CommentDto OnGet(PermissionsContext ctx, int id)
         {
             CommentDto result = null;
 
@@ -121,8 +122,11 @@ namespace Documents.Services.Impl
 
                 if (comment != null)
                 {
+                    var userId = ctx != null 
+                        ? ctx.CurrentUserId : 0;
+
                     result = comment
-                        .ToDto(_userCtx.GetCurrentId() == comment.UserId);
+                        .ToDto(userId == comment.UserId);
                 }
             }
 
@@ -132,18 +136,19 @@ namespace Documents.Services.Impl
         /// <summary>
         /// Retrieves list of specific comments associated for the document.
         /// </summary>
+        /// <param name="ctx">Contains information of current user</param>
         /// <param name="args">Document unique identifier</param>
         /// <returns>
         /// List of <see cref="CommentDto"/>s object containing the results in the 
         /// sequence specified in the documentId.
         /// </returns>
-        protected override IEnumerable<CommentDto> OnGetAll(params object[] args)
+        protected override IEnumerable<CommentDto> OnGetAll(PermissionsContext ctx, params object[] args)
         {
             var isGetCommentsByDocumentId = (args != null
                 && args.Length == 1 && args[0] is Guid && !((Guid)args[0]).Equals(Guid.Empty));
 
             if (isGetCommentsByDocumentId)
-                return GetCommentsByDocumentId((Guid)args[0]);
+                return GetCommentsByDocumentId(ctx, (Guid)args[0]);
             else 
                 return null;
         }
@@ -151,12 +156,13 @@ namespace Documents.Services.Impl
         /// <summary>
         /// Retrieves list of specific comments associated for the document.
         /// </summary>
+        /// <param name="ctx">Contains information of current user</param>
         /// <param name="documentId">Document unique identifier</param>
         /// <returns>
         /// List of <see cref="CommentDto"/>s object containing the results in the 
         /// sequence specified in the documentId.
         /// </returns>
-        protected IEnumerable<CommentDto> GetCommentsByDocumentId(Guid documentId)
+        protected IEnumerable<CommentDto> GetCommentsByDocumentId(PermissionsContext ctx, Guid documentId)
         {
             List<CommentDto> result = null;
 
@@ -169,8 +175,8 @@ namespace Documents.Services.Impl
 
                 if (comments != null && comments.Any())
                 {
-                    var userId = _userCtx
-                        .GetCurrentId();
+                    var userId = ctx != null
+                        ? ctx.CurrentUserId : 0;
 
                     result = new List<CommentDto>();
                     comments.ForEach(c => result.Add(c.ToDto(userId == c.UserId)));
@@ -256,11 +262,12 @@ namespace Documents.Services.Impl
         /// <summary>
         /// Check is document owner
         /// </summary>
+        /// <param name="ctx">Contains information of current user</param>
         /// <param name="id">Document unique identifier</param>
         /// <returns></returns>
-        public bool CheckIsCommentOwner(int id)
+        public bool CheckIsCommentOwner(PermissionsContext ctx, int id)
         {
-            var comment = Get(id);
+            var comment = Get(ctx, id);
             return (comment != null && comment.CanModify);
         }
     }

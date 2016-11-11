@@ -4,6 +4,7 @@ using System.Web.Http.Controllers;
 using Documents.Core;
 using Documents.Services;
 using Microsoft.Practices.Unity;
+using Documents.Data;
 
 namespace Documents.Filters
 {
@@ -29,6 +30,8 @@ namespace Documents.Filters
                 actionContext.RequestContext.RouteData != null &&
                 actionContext.RequestContext.RouteData.Values != null)
             {
+                var userId = GetUserId(actionContext);
+
                 var id = actionContext
                     .RequestContext
                     .RouteData
@@ -40,7 +43,9 @@ namespace Documents.Filters
                     commentId = 0;
 
                 result = CommentService
-                    .CheckIsCommentOwner(commentId);
+                    .CheckIsCommentOwner(
+                        new PermissionsContext(userId), 
+                        commentId);
             }
 
             return result;

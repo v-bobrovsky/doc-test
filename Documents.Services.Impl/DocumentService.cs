@@ -18,8 +18,8 @@ namespace Documents.Services.Impl
         /// <summary>
         /// Constructor
         /// </summary>
-        public DocumentService(IUserContext userCtx)
-            : base(userCtx)
+        public DocumentService()
+            : base()
         {
         }
 
@@ -96,9 +96,10 @@ namespace Documents.Services.Impl
         /// <summary>
         /// Retrieves a specific document
         /// </summary>
+        /// <param name="ctx">Contains information of current user</param>
         /// <param name="documentId">Document unique identifier</param>
         /// <returns></returns>
-        protected override DocumentDto OnGet(Guid id)
+        protected override DocumentDto OnGet(PermissionsContext ctx, Guid id)
         {
             DocumentDto result = null;
 
@@ -111,8 +112,11 @@ namespace Documents.Services.Impl
 
                 if (document != null)
                 {
+                    var userId = ctx != null
+                        ? ctx.CurrentUserId : 0;
+
                     result = document
-                        .ToDto(_userCtx.GetCurrentId() == document.UserId);
+                        .ToDto(userId == document.UserId);
                 }
             }
 
@@ -123,10 +127,11 @@ namespace Documents.Services.Impl
         /// Retrieves list of all specific documents. 
         /// Or retrieves list of specific documents associated for the user.
         /// </summary>
+        /// <param name="ctx">Contains information of current user</param>
         /// <returns>
         /// List of <see cref="DocumentDto"/>s object containing the results.
         /// </returns>
-        protected override IEnumerable<DocumentDto> OnGetAll(params object[] args)
+        protected override IEnumerable<DocumentDto> OnGetAll(PermissionsContext ctx, params object[] args)
         {
             var isGetDocumentsByUserId = (args != null
                 && args.Length == 1 && args[0] is int && (int)args[0] > 0);
@@ -134,16 +139,17 @@ namespace Documents.Services.Impl
             if (isGetDocumentsByUserId)
                 return GetDocumentsByUserId((int)args[0]);
             else
-                return GetAllDocuments();
+                return GetAllDocuments(ctx);
         }
 
         /// <summary>
         /// Retrieves list of all specific documents.
         /// </summary>
+        /// <param name="ctx">Contains information of current user</param>
         /// <returns>
         /// List of <see cref="DocumentDto"/>s object containing the results.
         /// </returns>
-        protected IEnumerable<DocumentDto> GetAllDocuments()
+        protected IEnumerable<DocumentDto> GetAllDocuments(PermissionsContext ctx)
         {
             List<DocumentDto> result = null;
 
@@ -156,7 +162,8 @@ namespace Documents.Services.Impl
 
                 if (documents != null && documents.Any())
                 {
-                    var userId = _userCtx.GetCurrentId();
+                    var userId = ctx != null
+                        ? ctx.CurrentUserId : 0;
 
                     result = new List<DocumentDto>();
                     documents.ForEach(d => result.Add(d.ToDto(userId == d.UserId)));
@@ -269,12 +276,13 @@ namespace Documents.Services.Impl
         /// <summary>
         /// Check is document owner
         /// </summary>
+        /// <param name="ctx">Contains information of current user</param>
         /// <param name="documentId">Document unique identifier</param>
         /// <param name="userId">Owner user id</param>
         /// <returns></returns>
-        public bool CheckIsDocumentOwner(Guid id)
+        public bool CheckIsDocumentOwner(PermissionsContext ctx, Guid id)
         {
-            var document = Get(id);
+            var document = Get(ctx, id);
             return (document != null && document.CanModify);
         }
     }

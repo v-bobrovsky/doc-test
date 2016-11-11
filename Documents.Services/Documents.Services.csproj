@@ -40,9 +40,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IUserService .cs" />
     <Compile Include="IRepositoryService.cs" />
-    <Compile Include="IUserContext.cs" />
-    <Compile Include="IUserService.cs" />
     <Compile Include="IDocumentService.cs" />
     <Compile Include="ICommentService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

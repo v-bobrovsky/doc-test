@@ -225,7 +225,6 @@
     <Compile Include="Core\OwinSecurity\ServiceUserManager.cs" />
     <Compile Include="Core\BaseController.cs" />
     <Compile Include="Core\OwinSecurity\ServiceUserPasswordHasher.cs" />
-    <Compile Include="Core\UserContext.cs" />
     <Compile Include="Filters\CommentPermissions.cs" />
     <Compile Include="Filters\DocumentPermissions.cs" />
     <Compile Include="Core\BaseContentPermissions.cs" />

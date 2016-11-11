@@ -1,10 +1,24 @@
 ﻿using System;
+using System.Web;
+using System.Text;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Web.Http;
 
-using Documents.Utils;
-using Microsoft.Practices.Unity;
-using System.Text;
+using System.Security.Claims;
+using Microsoft.Owin.Security;
+using Microsoft.AspNet.Identity;
+using System.Web.Http.Description;
+using Microsoft.Owin.Security.OAuth;
 using System.Security.Authentication;
+using Microsoft.AspNet.Identity.Owin;
+using Microsoft.Owin.Security.Cookies;
+using Microsoft.Practices.Unity;
+
+using Documents.Utils;
+using Documents.Data;
 
 namespace Documents.Core
 {
@@ -13,6 +27,30 @@ namespace Documents.Core
     /// </summary>
     public class BaseController : ApiController
     {
+        private ServiceUserManager _serviceUserManager;
+
+        [ApiExplorerSettings(IgnoreApi = true)]
+        public ServiceUserManager ServiceUserManager
+        {
+            get
+            {
+                return _serviceUserManager ??
+                       (_serviceUserManager = Request
+                       .GetOwinContext()
+                       .GetUserManager<ServiceUserManager>());
+            }
+        }
+
+        protected IAuthenticationManager Authentication
+        {
+            get
+            {
+                return Request
+                    .GetOwinContext()
+                    .Authentication;
+            }
+        }
+
         [Dependency]
         public ILogger Logger { get; set; }
 
@@ -72,6 +110,38 @@ namespace Documents.Core
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Get logged current user unique identity
+        /// </summary>
+        /// <returns></returns>
+        protected int GetCurrentUserId()
+        {
+            var result = 0;
+
+            if (User != null &&
+                User.Identity != null)
+            {
+                var userId = User
+                    .Identity
+                    .GetUserId();
+
+                if (!Int32.TryParse(userId, out result))
+                    result = 0;
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Get permissions context for logged current user
+        /// </summary>
+        /// <returns></returns>
+        protected PermissionsContext GetPermissionsContext()
+        {
+            var userId = GetCurrentUserId();
+            return new PermissionsContext(userId);
         }
     }
 }

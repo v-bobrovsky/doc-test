@@ -9,6 +9,7 @@ using System.Web.Http;
 using System.Security.Claims;
 using Microsoft.Owin.Security;
 using Microsoft.AspNet.Identity;
+using System.Web.Http.Description;
 using Microsoft.Owin.Security.OAuth;
 using System.Security.Authentication;
 using Microsoft.AspNet.Identity.Owin;
@@ -18,7 +19,6 @@ using Documents.Core;
 using Documents.Models;
 using Documents.Services;
 using Documents.Data;
-using System.Web.Http.Description;
 
 namespace Documents.Controllers
 {
@@ -29,39 +29,12 @@ namespace Documents.Controllers
     [RoutePrefix("api/Account")]
     public class AccountController : BaseController
     {
-        private readonly IUserContext _userContext;
-        private ServiceUserManager _serviceUserManager;
-
-        [ApiExplorerSettings(IgnoreApi = true)]
-        public ServiceUserManager ServiceUserManager
-        {
-            get
-            {
-                return _serviceUserManager ??
-                       (_serviceUserManager = HttpContext
-                       .Current
-                       .GetOwinContext()
-                       .GetUserManager<ServiceUserManager>());
-            }
-        }
-
-        private IAuthenticationManager Authentication
-        {
-            get 
-            { 
-                return Request
-                    .GetOwinContext()
-                    .Authentication; 
-            }
-        }
-
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="userContext"></param>
-        public AccountController(IUserContext userContext)
+        public AccountController()
         {
-            _userContext = userContext;
         }
        
         /// <summary>
@@ -219,9 +192,6 @@ namespace Documents.Controllers
                         IsPersistent = true
                     },
                     createIdentityTask.Result);
-
-                ((UserContext)_userContext)
-                    .SetUser(user.ToDto());
             }
         }
 
@@ -235,10 +205,6 @@ namespace Documents.Controllers
         {
             return PerformAction<IdentityResult>(() =>
             {
-                if (_userContext != null)
-                    ((UserContext)_userContext)
-                        .ClearUser();
-
                 Authentication.SignOut(
                     CookieAuthenticationDefaults
                     .AuthenticationType);

@@ -16,17 +16,14 @@ namespace Documents.Controllers
     [Authorize]
     public class CommentsController : BaseController
     {
-        private readonly IUserContext _userContext;
         private readonly ICommentService _commentService;
 
         /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="userContext"></param>
         /// <param name="commentService"></param>
-        public CommentsController(IUserContext userContext, ICommentService commentService)
+        public CommentsController(ICommentService commentService)
         {
-            _userContext = userContext;
             _commentService = commentService;
         }
 
@@ -43,8 +40,10 @@ namespace Documents.Controllers
         {
             return PerformAction<IEnumerable<CommentDto>>(() =>
             {
+                var ctx = GetPermissionsContext();
+
                 return _commentService
-                    .GetAll(documentId);
+                    .GetAll(ctx, documentId);
             });
         }
 
@@ -61,8 +60,10 @@ namespace Documents.Controllers
         {
             return PerformAction<CommentDto>(() =>
             {
+                var ctx = GetPermissionsContext();
+
                 return _commentService
-                    .Get(id);
+                    .Get(ctx, id);
             });
         }
 
@@ -86,8 +87,7 @@ namespace Documents.Controllers
 
                 if (comment != null)
                 {
-                    comment.UserId  = _userContext
-                        .GetCurrentId();
+                    comment.UserId = GetCurrentUserId();
 
                     result = _commentService
                         .Create(comment);
@@ -114,8 +114,10 @@ namespace Documents.Controllers
             {
                 CommentDto result = null;
 
+                var ctx = GetPermissionsContext();
+
                 var commentDto = _commentService
-                    .Get(id);
+                    .Get(ctx, id);
 
                 if (commentDto != null)
                 {
