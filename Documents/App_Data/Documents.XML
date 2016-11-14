@@ -756,6 +756,17 @@
             True if successfully otherwise False.
             </returns>
         </member>
+        <member name="T:Documents.Core.UnityResolver">
+            <summary>
+            Unity resolver
+            </summary>
+        </member>
+        <member name="M:Documents.Core.UnityResolver.#ctor(Microsoft.Practices.Unity.IUnityContainer)">
+            <summary>
+            Constructor
+            </summary>
+            <param name="container"></param>
+        </member>
         <member name="T:Documents.Core.Extensions">
             <summary>
             Extensions methods to convert web api model to DTO objects
@@ -884,36 +895,6 @@
             Update a user
             </summary>
             <param name="user"></param>
-            <returns></returns>
-        </member>
-        <member name="T:Documents.Core.UnityResolver">
-            <summary>
-            Unity resolver
-            </summary>
-        </member>
-        <member name="M:Documents.Core.UnityResolver.#ctor(Microsoft.Practices.Unity.IUnityContainer)">
-            <summary>
-            Constructor
-            </summary>
-            <param name="container"></param>
-        </member>
-        <member name="T:Documents.Core.UnityFilterProvider">
-            <summary>
-            Unity filter provider
-            </summary>
-        </member>
-        <member name="M:Documents.Core.UnityFilterProvider.#ctor(Microsoft.Practices.Unity.IUnityContainer)">
-            <summary>
-            Constructor
-            </summary>
-            <param name="container"></param>
-        </member>
-        <member name="M:Documents.Core.UnityFilterProvider.GetFilters(System.Web.Http.HttpConfiguration,System.Web.Http.Controllers.HttpActionDescriptor)">
-            <summary>
-            Get filters
-            </summary>
-            <param name="configuration"></param>
-            <param name="actionDescriptor"></param>
             <returns></returns>
         </member>
         <member name="T:Documents.Core.ServiceUserManager">

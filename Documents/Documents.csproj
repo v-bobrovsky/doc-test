@@ -226,10 +226,9 @@
     <Compile Include="Controllers\UserInfoController.cs" />
     <Compile Include="Controllers\CommentsController.cs" />
     <Compile Include="Controllers\DocumentsController.cs" />
+    <Compile Include="Core\UnityResolver.cs" />
     <Compile Include="Core\Extensions.cs" />
     <Compile Include="Core\OwinSecurity\ServiceUserStore .cs" />
-    <Compile Include="Core\Unity\UnityResolver.cs" />
-    <Compile Include="Core\Unity\UnityFilterProvider.cs" />
     <Compile Include="Core\OwinSecurity\ServiceUserManager.cs" />
     <Compile Include="Core\BaseController.cs" />
     <Compile Include="Core\OwinSecurity\ServiceUserPasswordHasher.cs" />

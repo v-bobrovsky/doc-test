@@ -13,9 +13,6 @@ namespace Documents.Filters
     /// </summary>
     public class CommentPermissions : BaseContentPermissions
     {
-        [Dependency]
-        public ICommentService CommentService { get; set; }
-
         /// <summary>
         /// Check is own content
         /// </summary>
@@ -42,10 +39,15 @@ namespace Documents.Filters
                 if (!int.TryParse(id, out commentId))
                     commentId = 0;
 
-                result = CommentService
-                    .CheckIsCommentOwner(
-                        new PermissionsContext(userId), 
-                        commentId);
+                if (commentId > 0)
+                {
+                    var service = UnityConfig.Resolve<ICommentService>();
+
+                    result = service
+                        .CheckIsCommentOwner(
+                            new PermissionsContext(userId),
+                            commentId);
+                }
             }
 
             return result;

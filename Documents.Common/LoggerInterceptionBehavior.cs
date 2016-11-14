@@ -37,7 +37,7 @@ namespace Documents.Common
         { 
             return Type.EmptyTypes; 
         }
-
+        
         public IMethodReturn Invoke(IMethodInvocation input, GetNextInterceptionBehaviorDelegate getNext)    
         {
             var declaringType = input

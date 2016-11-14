@@ -13,9 +13,6 @@ namespace Documents.Filters
     /// </summary>
     public class DocumentPermissions : BaseContentPermissions
     {
-        [Dependency]
-        public IDocumentService DocumentService { get; set; }
-
         /// <summary>
         /// Check is own content
         /// </summary>
@@ -46,8 +43,10 @@ namespace Documents.Filters
 
                 if (!documentId.Equals(Guid.Empty))
                 {
+                    var service = UnityConfig.Resolve<IDocumentService>();
+
                     result =
-                        DocumentService
+                        service
                         .CheckIsDocumentOwner(
                             new PermissionsContext(userId),
                             documentId);

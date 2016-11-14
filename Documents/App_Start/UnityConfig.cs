@@ -54,13 +54,6 @@ namespace Documents
         public static void RegisterComponents(HttpConfiguration config)
         {
             config.DependencyResolver = new UnityResolver(_container);
-
-            //Register the filter injector
-            var providers = config.Services.GetFilterProviders().ToList();
-            var defaultprovider = providers.Single(i => i is ActionDescriptorFilterProvider);
-
-            config.Services.Remove(typeof(IFilterProvider), defaultprovider);
-            config.Services.Add(typeof(IFilterProvider), new UnityFilterProvider(_container));
         }
     }
 }
