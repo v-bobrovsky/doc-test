@@ -219,7 +219,16 @@ namespace Documents.Services.Tests.Core
 
             Assert.IsNotNull(newData);
 
-            var savedData = _testService.Create(newData);
+            TEntityDto savedData = null;
+
+            try
+            {
+                savedData = _testService.Create(newData);
+            }
+            catch (EntityValidationException e)
+            {
+                savedData = null;
+            }
             
             Assert.IsNull(savedData);
         }

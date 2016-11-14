@@ -1,12 +1,16 @@
-using Documents.Core;
-using Documents.Services;
-using Documents.Services.Impl;
-using Documents.Utils;
-using Microsoft.Practices.Unity;
 using System.Linq;
 using System.Web.Http;
 using System.Web.Http.Filters;
+
 using Unity.WebApi;
+using Microsoft.Practices.Unity;
+using Microsoft.Practices.Unity.InterceptionExtension;
+
+using Documents.Core;
+using Documents.Utils;
+using Documents.Common;
+using Documents.Services;
+using Documents.Services.Impl;
 
 namespace Documents
 {
@@ -29,14 +33,18 @@ namespace Documents
 
         static UnityConfig()
         {
-            _container.RegisterType<ILogger, SimpleLogger>(new HierarchicalLifetimeManager());
+            _container.RegisterType<ILogger, SimpleLogger>();
 
-            _container.RegisterType<IDocumentService, DocumentService>(new HierarchicalLifetimeManager(),
-                new InjectionConstructor());
-            _container.RegisterType<ICommentService, CommentService>(new HierarchicalLifetimeManager(),
-                new InjectionConstructor());
-            _container.RegisterType<IUserService, UserService>(new HierarchicalLifetimeManager(),
-                new InjectionConstructor());
+            _container.AddNewExtension<Interception>();
+
+            _container.RegisterType<IDocumentService, DocumentService>(new Interceptor<VirtualMethodInterceptor>(),
+                                        new InterceptionBehavior<LoggerInterceptionBehavior>());
+
+            _container.RegisterType<ICommentService, CommentService>(new Interceptor<VirtualMethodInterceptor>(),
+                                        new InterceptionBehavior<LoggerInterceptionBehavior>());
+
+            _container.RegisterType<IUserService, UserService>(new Interceptor<VirtualMethodInterceptor>(),
+                                        new InterceptionBehavior<LoggerInterceptionBehavior>());
         }
 
         /// <summary>

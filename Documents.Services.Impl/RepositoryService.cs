@@ -17,12 +17,6 @@ namespace Documents.Services.Impl
         : IRepositoryService<TEntityDto, TIdentity>
         where TEntityDto : class
     {
-        #region Members
-
-        protected readonly ILogger _logger;
-
-        #endregion
-
         #region Virtual validations methods
 
         protected virtual bool ValidateNewEntity(TEntityDto entityDto)
@@ -57,27 +51,6 @@ namespace Documents.Services.Impl
         /// </summary>
         public RepositoryService()
         {
-            _logger = ObjectContainer.Resolve<SimpleLogger>();
-        }
-
-        /// <summary>
-        /// Performs the specified action
-        /// </summary>
-        /// <param name="action">Action to perform</param>
-        private void PerformAction(Action action)
-        {
-            try
-            {
-                _logger.LogInfo(String.Format("Performing service: {0}.{1}", 
-                    this.GetType().Name, action.Method.Name));
-
-                 action();
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e);
-                throw e;
-            }
         }
 
         /// <summary>
@@ -89,22 +62,10 @@ namespace Documents.Services.Impl
         /// </returns>
         public TEntityDto Create(TEntityDto entityDto)
         {
-            TEntityDto result = null;
+            if (!ValidateNewEntity(entityDto))
+                throw new EntityValidationException(entityDto);
 
-            PerformAction(() =>
-            {
-                if (ValidateNewEntity(entityDto))
-                {
-                    result = OnCreate(entityDto);
-                }
-                else
-                {
-                    _logger.LogError("Validation error for entity:");
-                    _logger.LogErrorObject(entityDto);
-                }                   
-            });
-
-            return result;
+            return OnCreate(entityDto);
         }
 
         /// <summary>
@@ -117,23 +78,10 @@ namespace Documents.Services.Impl
         /// </returns>
         public TEntityDto Get(PermissionsContext ctx, TIdentity id)
         {
-            TEntityDto result = null;
+            if (!ValidateEntityKey(id))
+                throw new EntityValidationException(id);
 
-            PerformAction(() =>
-            {
-                if (ValidateEntityKey(id))
-                {
-                    result = OnGet(ctx, id);
-                }
-                else
-                {
-                    _logger.LogError("Validation error for identity:");
-                    _logger.LogErrorObject(id);
-                }
-                    
-            });
-
-            return result;
+           return OnGet(ctx, id);
         }
 
         /// <summary>
@@ -144,14 +92,7 @@ namespace Documents.Services.Impl
         /// <returns></returns>
         public IEnumerable<TEntityDto> GetAll(PermissionsContext ctx, params object[] args)
         {
-            IEnumerable<TEntityDto> result = null;
-
-            PerformAction(() =>
-            {
-                result = OnGetAll(ctx, args);
-            });
-
-            return result;
+            return OnGetAll(ctx, args);
         }
 
         /// <summary>
@@ -163,22 +104,10 @@ namespace Documents.Services.Impl
         /// </returns>
         public TEntityDto Update(TEntityDto entityDto)
         {
-            TEntityDto result = null;
+            if (!ValidateExistEntity(entityDto))
+                throw new EntityValidationException(entityDto);
 
-            PerformAction(() =>
-            {
-                if (ValidateExistEntity(entityDto))
-                {
-                    result = OnUpdate(entityDto);
-                }
-                else
-                {
-                    _logger.LogError("Validation error for entity:");
-                    _logger.LogErrorObject(entityDto);
-                }
-            });
-
-            return result;
+            return OnUpdate(entityDto);
         }
 
         /// <summary>
@@ -188,22 +117,10 @@ namespace Documents.Services.Impl
         /// <returns></returns>
         public bool Delete(TIdentity id)
         {
-            bool result = false;
-
-            PerformAction(() =>
-            {
-                if (ValidateEntityKey(id))
-                {
-                    result = OnDelete(id);
-                }
-                else
-                {
-                    _logger.LogError("Validation error for identity:");
-                    _logger.LogErrorObject(id);
-                }
-            });
-
-            return result;
+            if (!ValidateEntityKey(id))
+                throw new EntityValidationException(id);
+            
+            return OnDelete(id);
         }
     }
 }
